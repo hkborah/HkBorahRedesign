@@ -26,7 +26,8 @@ export default function Journal() {
         const response = await fetch("/api/blog/posts");
         if (response.ok) {
           const data = await response.json();
-          setPosts(data);
+          // If API returns empty array, fall back to BLOG_POSTS so user sees initial articles
+          setPosts(data && data.length > 0 ? data : BLOG_POSTS);
         } else {
           setPosts(BLOG_POSTS);
         }
