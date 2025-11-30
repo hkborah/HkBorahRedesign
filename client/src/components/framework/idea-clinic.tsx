@@ -95,15 +95,16 @@ export function IdeaClinic() {
       }).join('\n\n');
 
       try {
-          // Save to local backend first
+          // Save to local backend and Google Drive
           const response = await fetch('/api/chat/save', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ messages })
           });
 
-          // Google Drive integration requires backend CORS update to accept Replit domain
-          // For now, chat is saved to database only
+          if (!response.ok) throw new Error('Failed to save');
+          
+          const result = await response.json();
 
           // Trigger Client-Side Download
           const blob = new Blob([textContent], { type: 'text/plain' });
@@ -116,12 +117,17 @@ export function IdeaClinic() {
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
 
+          let description = "Your chat transcript has been saved and downloaded.";
+          if (result.googleDrive) {
+              description += " Backed up to Google Drive.";
+          }
+
           toast({
               title: "Session Saved",
-              description: "Your chat transcript has been downloaded and archived.",
+              description: description,
           });
       } catch (error) {
-          console.error("Download error:", error);
+          console.error("Save error:", error);
           toast({
               title: "Save Failed",
               description: "Could not save your chat session. Please try again.",
