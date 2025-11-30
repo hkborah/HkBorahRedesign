@@ -102,28 +102,8 @@ export function IdeaClinic() {
               body: JSON.stringify({ messages })
           });
 
-          if (response.ok) {
-              // Save to Google Drive via external API
-              try {
-                  const driveResponse = await fetch(SAVE_API, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ history: messages })
-                  });
-                  
-                  const driveData = await driveResponse.text();
-                  console.log("Google Drive response status:", driveResponse.status);
-                  console.log("Google Drive response body:", driveData);
-                  
-                  if (!driveResponse.ok) {
-                      console.error("Google Drive save failed. Status:", driveResponse.status, "Response:", driveData);
-                  } else {
-                      console.log("Google Drive save succeeded!");
-                  }
-              } catch (driveErr) {
-                  console.error("Google Drive API error:", driveErr);
-              }
-          }
+          // Google Drive integration requires backend CORS update to accept Replit domain
+          // For now, chat is saved to database only
 
           // Trigger Client-Side Download
           const blob = new Blob([textContent], { type: 'text/plain' });
