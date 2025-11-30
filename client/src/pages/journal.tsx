@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { BLOG_POSTS } from "@/lib/data";
+import * as React from "react";
 import logoUrl from "@assets/hkborah-logo.png";
 import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
 import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
@@ -16,12 +17,45 @@ const imageMap: { [key: string]: string } = {
 };
 
 export default function Journal() {
-  const featuredPost = BLOG_POSTS?.[0];
-  const remainingPosts = BLOG_POSTS?.slice(1) || [];
+  const [posts, setPosts] = React.useState<typeof BLOG_POSTS>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/blog/posts");
+        if (response.ok) {
+          const data = await response.json();
+          setPosts(data);
+        } else {
+          setPosts(BLOG_POSTS);
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setPosts(BLOG_POSTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  const featuredPost = posts?.[0];
+  const remainingPosts = posts?.slice(1) || [];
   
   const getImage = (postId: string) => {
     return imageMap[postId] || "";
   };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+          <p className="text-slate-400">Loading reports...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (!featuredPost) {
     return (

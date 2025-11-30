@@ -131,14 +131,29 @@ export default function AdminEditor() {
           });
         }
       } else {
-      setPosts([newPost, ...posts]);
+        const response = await fetch("/api/blog/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newPost),
+        });
+        if (response.ok) {
+          const created = await response.json();
+          setPosts([created, ...posts]);
+          toast({
+            title: "Report Published",
+            description: "Your intelligence report is now in the vault.",
+          });
+        }
+      }
+      resetForm();
+    } catch (error) {
+      console.error("Error publishing post:", error);
       toast({
-        title: "Intelligence Published",
-        description: "The report has been encrypted and stored in the vault.",
+        title: "Error",
+        description: "Failed to publish report. Please try again.",
+        variant: "destructive"
       });
     }
-    
-    resetForm();
   };
 
   const resetForm = () => {

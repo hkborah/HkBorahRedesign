@@ -66,6 +66,8 @@ export class MemStorage implements IStorage {
       ...insertPost,
       id,
       createdAt: new Date(),
+      image: insertPost.image || null,
+      category: insertPost.category || null,
     };
     this.blogPosts.set(id, post);
     return post;
@@ -76,6 +78,8 @@ export class MemStorage implements IStorage {
       ...insertPost,
       id,
       createdAt: new Date(),
+      image: insertPost.image || null,
+      category: insertPost.category || null,
     };
     this.blogPosts.set(id, post);
     return post;
