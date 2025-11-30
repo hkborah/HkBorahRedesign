@@ -102,11 +102,10 @@ export default function AdminEditor() {
     });
   };
 
-  const handlePublish = (e: React.FormEvent) => {
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const newPost = {
-        id: editingPostId || String(posts.length + 1),
         title,
         category,
         excerpt: content.substring(0, 100) + "...",
@@ -116,13 +115,22 @@ export default function AdminEditor() {
         slug: title.toLowerCase().replace(/\s+/g, '-')
     };
 
-    if (editingPostId) {
-      setPosts(posts.map(p => p.id === editingPostId ? newPost : p));
-      toast({
-        title: "Report Updated",
-        description: "Changes have been saved to the vault.",
-      });
-    } else {
+    try {
+      if (editingPostId) {
+        const response = await fetch(`/api/blog/posts/${editingPostId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newPost),
+        });
+        if (response.ok) {
+          const updated = await response.json();
+          setPosts(posts.map(p => p.id === editingPostId ? updated : p));
+          toast({
+            title: "Report Updated",
+            description: "Changes have been saved to the vault.",
+          });
+        }
+      } else {
       setPosts([newPost, ...posts]);
       toast({
         title: "Intelligence Published",

@@ -37,5 +37,82 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/blog/posts", async (req, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ error: "Failed to fetch blog posts" });
+    }
+  });
+
+  app.get("/api/blog/posts/:id", async (req, res) => {
+    try {
+      const post = await storage.getBlogPost(req.params.id);
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ error: "Failed to fetch blog post" });
+    }
+  });
+
+  app.post("/api/blog/posts", async (req, res) => {
+    try {
+      const { title, category, excerpt, content, image, slug, date } = req.body;
+      const post = await storage.createBlogPost({
+        title,
+        category,
+        excerpt,
+        content,
+        image,
+        slug,
+        date,
+      });
+      res.json(post);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      res.status(500).json({ error: "Failed to create blog post" });
+    }
+  });
+
+  app.put("/api/blog/posts/:id", async (req, res) => {
+    try {
+      const { title, category, excerpt, content, image, slug, date } = req.body;
+      const post = await storage.updateBlogPost(req.params.id, {
+        title,
+        category,
+        excerpt,
+        content,
+        image,
+        slug,
+        date,
+      });
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      console.error("Error updating blog post:", error);
+      res.status(500).json({ error: "Failed to update blog post" });
+    }
+  });
+
+  app.delete("/api/blog/posts/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteBlogPost(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      res.status(500).json({ error: "Failed to delete blog post" });
+    }
+  });
+
   return httpServer;
 }
