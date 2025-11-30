@@ -140,8 +140,9 @@ export async function registerRoutes(
       // Save to storage
       const session = await storage.saveChatSession(transcript);
 
-      // Attempt to save to Google Drive
-      const fileName = `HK_Borah_Idea_Clinic_${new Date().toISOString().slice(0,10)}.txt`;
+      // Attempt to save to Google Drive with timestamp to ensure unique files
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const fileName = `HK_Borah_Idea_Clinic_${timestamp}.txt`;
       const driveResult = await saveToGoogleDrive(transcript, fileName);
 
       res.json({
