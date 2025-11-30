@@ -71,7 +71,7 @@ export function IntelligenceSidebar() {
         </Link>
 
         {/* Manual Link */}
-        <div className="mt-8 pt-8 border-t border-slate-900">
+        <div className="mt-8 pt-8 border-t border-slate-900 space-y-4">
           <a href="https://notionpress.com/in/read/the-order-of-chaos" target="_blank" rel="noreferrer" className="group cursor-pointer block">
             <div className="grid grid-cols-[1fr_120px] gap-4 items-start">
               {/* Text Section */}
@@ -94,6 +94,14 @@ export function IntelligenceSidebar() {
               </div>
             </div>
           </a>
+          
+          {/* Explanation Text */}
+          <p className="text-xs text-slate-400 font-light leading-relaxed">
+            The Architectural Scaling Framework is an evolving system. My book, <span className="italic">The Order of Chaos</span>, provides the definitive, deep analysis of the cornerstone case files for each domain—the foundational problems every founder must solve.
+          </p>
+          <p className="text-xs text-slate-400 font-light leading-relaxed">
+            This online Case File Codex is the living, breathing version of that library. It contains those same cornerstone cases, supplemented by an ever-growing collection of new, more tactical case files developed through my ongoing work.
+          </p>
         </div>
       </div>
       
