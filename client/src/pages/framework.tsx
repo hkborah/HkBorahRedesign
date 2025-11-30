@@ -62,40 +62,64 @@ export default function Framework() {
 
                 {/* ASF Process Diagram */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12">
-                    <div className="flex gap-6 items-flex-start relative">
-                        {/* Step 01 - Parallelogram */}
+                    {/* Flow Line */}
+                    <div className="absolute left-12 right-12 top-1/2 transform -translate-y-1/2 h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500 rounded-full" style={{ width: 'calc(100% - 96px)' }}></div>
+
+                    <div className="flex gap-8 items-flex-start relative z-10">
+                        {/* Step 01 */}
                         <div className="flex-1 flex flex-col items-center">
-                            <div className="w-full bg-gradient-to-br from-amber-600 to-amber-700 p-8 mb-8 h-48 flex flex-col items-center justify-center text-center" style={{ clipPath: 'polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)' }}>
-                                <div className="text-5xl mb-4">⚙️</div>
-                                <h3 className="text-lg font-serif font-bold text-white mb-2">Scaling Diagnostic Matrix</h3>
-                                <p className="text-sm text-amber-100">Identify Stage of Growth and Point of Pain</p>
+                            {/* Circular Badge */}
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-6 shadow-lg">
+                                <div className="text-4xl">⚙️</div>
                             </div>
+                            
+                            {/* Trapezoid Box */}
+                            <div className="w-full relative mb-6" style={{ perspective: '1000px' }}>
+                                <div className="bg-gradient-to-br from-amber-600 to-amber-700 pt-12 pb-8 px-6 text-center" style={{ clipPath: 'polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%)', transform: 'rotateX(5deg)' }}>
+                                    <h3 className="text-base font-serif font-bold text-white mb-2">Scaling Diagnostic Matrix</h3>
+                                    <p className="text-xs text-amber-100">Identify Stage of Growth and Point of Pain</p>
+                                </div>
+                            </div>
+                            
                             <p className="text-xs font-mono text-amber-500 font-semibold">STEP 01</p>
                         </div>
 
-                        {/* Step 02 - Rectangle */}
+                        {/* Step 02 */}
                         <div className="flex-1 flex flex-col items-center">
-                            <div className="w-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg p-8 mb-8 h-48 flex flex-col items-center justify-center text-center">
-                                <div className="text-5xl mb-4">📖</div>
-                                <h3 className="text-lg font-serif font-bold text-white mb-2">Case File Codex</h3>
-                                <p className="text-sm text-slate-300">Locate solutions to 80% of problems faced by founders</p>
+                            {/* Circular Badge */}
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center mb-6 shadow-lg">
+                                <div className="text-4xl">📖</div>
                             </div>
+                            
+                            {/* Trapezoid Box */}
+                            <div className="w-full relative mb-6" style={{ perspective: '1000px' }}>
+                                <div className="bg-gradient-to-br from-slate-700 to-slate-800 pt-12 pb-8 px-6 text-center" style={{ clipPath: 'polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%)', transform: 'rotateX(5deg)' }}>
+                                    <h3 className="text-base font-serif font-bold text-white mb-2">Case File Codex</h3>
+                                    <p className="text-xs text-slate-300">Locate solutions to 80% of problems faced by founders</p>
+                                </div>
+                            </div>
+                            
                             <p className="text-xs font-mono text-slate-400 font-semibold">STEP 02</p>
                         </div>
 
-                        {/* Step 03 - Reverse Parallelogram */}
+                        {/* Step 03 */}
                         <div className="flex-1 flex flex-col items-center">
-                            <div className="w-full bg-gradient-to-br from-emerald-600 to-emerald-700 p-8 mb-8 h-48 flex flex-col items-center justify-center text-center" style={{ clipPath: 'polygon(0% 0%, 85% 0%, 100% 100%, 15% 100%)' }}>
-                                <div className="text-5xl mb-4">💬</div>
-                                <h3 className="text-lg font-serif font-bold text-white mb-2">Idea Clinic</h3>
-                                <p className="text-sm text-emerald-100">Discuss solutions to 20% of unique problems</p>
+                            {/* Circular Badge */}
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-6 shadow-lg">
+                                <div className="text-4xl">💬</div>
                             </div>
+                            
+                            {/* Trapezoid Box */}
+                            <div className="w-full relative mb-6" style={{ perspective: '1000px' }}>
+                                <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 pt-12 pb-8 px-6 text-center" style={{ clipPath: 'polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%)', transform: 'rotateX(5deg)' }}>
+                                    <h3 className="text-base font-serif font-bold text-white mb-2">Idea Clinic</h3>
+                                    <p className="text-xs text-emerald-100">Discuss solutions to 20% of unique problems</p>
+                                </div>
+                            </div>
+                            
                             <p className="text-xs font-mono text-emerald-400 font-semibold">STEP 03</p>
                         </div>
                     </div>
-
-                    {/* Continuous Flow Line */}
-                    <div className="mt-8 h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500 rounded-full"></div>
                 </div>
             </div>
 
