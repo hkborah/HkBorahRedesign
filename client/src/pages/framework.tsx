@@ -57,6 +57,19 @@ export default function Framework() {
                     <span className="text-sm font-mono text-slate-500 uppercase tracking-widest">02. Case File Codex</span>
                     <div className="h-px flex-1 bg-slate-800"></div>
                 </div>
+
+                {/* The Structure of the Codex - Introduction before accordion */}
+                <div className="space-y-6 max-w-3xl">
+                    <h3 className="text-3xl font-serif font-bold text-slate-100">The Architecture Behind the Architecture</h3>
+                    <div className="space-y-6 text-lg text-slate-400 font-light leading-relaxed">
+                        <p>
+                            The universe of startup challenges is vast, but the foundational problems are finite and predictable. This Codex is not an exhaustive encyclopedia of every possible issue. It is a curated library of the <span className="text-amber-300 font-medium">cornerstone challenges</span>—the few, critical, high-leverage problems that, when solved correctly, unlock the majority of progress at each stage.
+                        </p>
+                        <p>
+                            Each section below focuses on these core architectural issues, allowing you to avoid distraction and apply your limited resources to the work that truly matters. The full, detailed blueprints are in the book.
+                        </p>
+                    </div>
+                </div>
                 
                 {selectedEntry ? (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -67,19 +80,6 @@ export default function Framework() {
                         <p className="text-slate-500 font-mono">Select a module from the matrix above to view the Case File.</p>
                     </div>
                 )}
-            </div>
-
-            {/* The Structure of the Codex - Introduction following Case File Codex */}
-            <div className="space-y-6 max-w-3xl">
-                <h3 className="text-3xl font-serif font-bold text-slate-100">The Architecture Behind the Architecture</h3>
-                <div className="space-y-6 text-lg text-slate-400 font-light leading-relaxed">
-                    <p>
-                        The universe of startup challenges is vast, but the foundational problems are finite and predictable. This Codex is not an exhaustive encyclopedia of every possible issue. It is a curated library of the <span className="text-amber-300 font-medium">cornerstone challenges</span>—the few, critical, high-leverage problems that, when solved correctly, unlock the majority of progress at each stage.
-                    </p>
-                    <p>
-                        Each section above focuses on these core architectural issues, allowing you to avoid distraction and apply your limited resources to the work that truly matters. The full, detailed blueprints are in the book.
-                    </p>
-                </div>
             </div>
 
             {/* 3. Idea Clinic */}
