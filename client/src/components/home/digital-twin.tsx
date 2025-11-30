@@ -152,10 +152,10 @@ export function DigitalTwin() {
                     </div>
                   )}
                   
-                  <div className={`max-w-[70%] p-4 rounded-lg ${
+                  <div className={`max-w-[70%] p-4 rounded-lg border ${
                     msg.role === 'assistant' 
-                      ? 'bg-slate-100 text-slate-900' 
-                      : 'bg-slate-800 text-slate-100'
+                      ? 'bg-slate-900/80 border-slate-800 text-slate-200' 
+                      : 'bg-amber-500/10 border-amber-500/20 text-amber-100'
                   }`}>
                     <p className="text-sm leading-relaxed font-light">
                       {msg.content}
@@ -173,10 +173,10 @@ export function DigitalTwin() {
                   <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center flex-shrink-0 mt-1">
                     <span className="text-xs font-serif font-bold text-amber-500">HK</span>
                   </div>
-                  <div className="bg-slate-100 p-4 rounded-lg flex gap-1 items-center">
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                  <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-lg flex gap-1 items-center">
+                    <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                    <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                    <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce"></div>
                   </div>
                 </motion.div>
               )}
@@ -195,7 +195,7 @@ export function DigitalTwin() {
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about scaling, chaos, or strategy..."
             disabled={isTyping}
-            className="bg-slate-100 border-slate-300 h-12 pl-4 pr-12 rounded focus-visible:ring-amber-500 text-slate-900 placeholder:text-slate-500 font-light"
+            className="bg-slate-900/50 border-slate-800 h-12 pl-4 pr-12 rounded focus-visible:ring-amber-500/50 text-slate-200 placeholder:text-slate-600 font-light"
           />
           <Button 
             size="icon" 
