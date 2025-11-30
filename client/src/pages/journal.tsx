@@ -19,6 +19,8 @@ const imageMap: { [key: string]: string } = {
 export default function Journal() {
   const [posts, setPosts] = React.useState<typeof BLOG_POSTS>([]);
   const [loading, setLoading] = React.useState(true);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const postsPerPage = 6;
 
   React.useEffect(() => {
     const fetchPosts = async () => {
@@ -43,6 +45,26 @@ export default function Journal() {
 
   const featuredPost = posts?.[0];
   const remainingPosts = posts?.slice(1) || [];
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(remainingPosts.length / postsPerPage);
+  const startIdx = (currentPage - 1) * postsPerPage;
+  const endIdx = startIdx + postsPerPage;
+  const paginatedPosts = remainingPosts.slice(startIdx, endIdx);
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+  
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
   
   const getImage = (postId: string) => {
     return imageMap[postId] || "";
@@ -136,9 +158,10 @@ export default function Journal() {
                </Link>
             </motion.div>
 
-            {/* Grid of Remaining Posts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {remainingPosts.map((post, index) => (
+            {/* Grid of Paginated Posts */}
+            <div className="mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-96">
+                {paginatedPosts.map((post, index) => (
                     <motion.div
                         key={post.id}
                         initial={{ opacity: 0, y: 20 }}
@@ -173,6 +196,58 @@ export default function Journal() {
                         </Link>
                     </motion.div>
                 ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-6 mt-12 pt-8 border-t border-slate-800">
+                  <Button
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                    variant="outline"
+                    className="border-slate-700 text-slate-300 hover:bg-slate-900 hover:text-amber-500 disabled:opacity-50 disabled:cursor-not-allowed gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Previous
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className={`w-10 h-10 rounded font-mono text-sm transition-all ${
+                          currentPage === page
+                            ? 'bg-amber-500 text-slate-950 font-bold'
+                            : 'bg-slate-900/50 text-slate-400 hover:bg-slate-800 hover:text-amber-500 border border-slate-800'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <Button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    variant="outline"
+                    className="border-slate-700 text-slate-300 hover:bg-slate-900 hover:text-amber-500 disabled:opacity-50 disabled:cursor-not-allowed gap-2"
+                  >
+                    Next <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Page Info */}
+              {totalPages > 1 && (
+                <div className="text-center mt-6">
+                  <p className="text-slate-500 text-sm font-mono">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                </div>
+              )}
             </div>
         </div>
       </div>
