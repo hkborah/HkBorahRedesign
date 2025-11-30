@@ -114,7 +114,7 @@ export default function Framework() {
                 <div className="space-y-4">
                     <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">03. The Idea Clinic</span>
                     <h2 className="text-4xl font-serif font-bold text-slate-100">The Other 20%</h2>
-                    <p className="text-slate-400 font-light leading-relaxed max-w-2xl">
+                    <p className="text-slate-400 font-light leading-relaxed">
                         The Codex covers the 80% of predictable scaling challenges. For the novel issues—the "other 20%"—we dissect them in the Idea Clinic community.
                     </p>
                 </div>
