@@ -89,19 +89,21 @@ export function IdeaClinic() {
       // Prepare text content for download
       const textContent = messages.map(msg => {
           const role = msg.role === 'user' ? 'FOUNDER' : 'HK BORAH';
-          return `[${role}]:\n${msg.content}\n-------------------`;
-      }).join('\n\n');
+          return `[${role}]:\n${msg.content}`;
+      }).join('\n\n-------------------\n\n');
 
       try {
-          // Save to Server (Archival) - Silent
-          await fetch(SAVE_API, {
+          // Save to backend
+          const response = await fetch('/api/chat/save', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ history: messages })
+              body: JSON.stringify({ messages })
           });
-      } catch (error) {
-          console.error("Background archival failed:", error);
-      } finally {
+
+          if (!response.ok) throw new Error('Failed to save');
+          
+          const data = await response.json();
+
           // Trigger Client-Side Download
           const blob = new Blob([textContent], { type: 'text/plain' });
           const url = window.URL.createObjectURL(blob);
@@ -113,11 +115,19 @@ export function IdeaClinic() {
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
 
-          setIsSaving(false);
           toast({
               title: "Session Saved",
-              description: "Your chat transcript has been downloaded securely.",
+              description: "Your chat transcript has been archived and downloaded.",
           });
+      } catch (error) {
+          console.error("Save error:", error);
+          toast({
+              title: "Save Failed",
+              description: "Could not save your chat session. Please try again.",
+              variant: "destructive"
+          });
+      } finally {
+          setIsSaving(false);
       }
   };
 
