@@ -5,6 +5,8 @@ import { Link, useRoute } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
 import NotFound from "@/pages/not-found";
 import * as React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function JournalPost() {
   const [, params] = useRoute("/journal/:id");
@@ -69,23 +71,9 @@ export default function JournalPost() {
 
             <div className="prose prose-invert prose-lg prose-slate max-w-none font-light">
                 <p className="lead text-xl text-slate-300">{post.excerpt}</p>
-                
-                <p>
-                    Chaos is often misinterpreted as a sign of failure. In the early stages of a startup, chaos is actually a proxy for speed. It means you are moving faster than your processes can handle. This is acceptable—until it isn't.
-                </p>
-                <p>
-                    There comes a tipping point, usually around the $10M ARR mark or 50-employee headcount, where the very chaos that fueled your initial growth becomes the friction that stalls it.
-                </p>
-                <h3>The Architecture of Scale</h3>
-                <p>
-                    Scaling is not just about "more"—more people, more revenue, more customers. It is about "better." It requires a fundamental re-architecting of how decisions are made, how information flows, and how value is delivered.
-                </p>
-                <blockquote>
-                    "An enduring company is not stumbled upon. It is architected."
-                </blockquote>
-                <p>
-                    To transition from a chaotic startup to a structured enterprise, you must stop viewing your company as a family and start viewing it as a high-performance team. The systems you build today will determine the speed at which you can move tomorrow.
-                </p>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert prose-lg max-w-none">
+                    {post.content}
+                </ReactMarkdown>
             </div>
 
             <div className="mt-12 pt-8 border-t border-slate-900 flex justify-between items-center">
