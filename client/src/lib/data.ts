@@ -1,15 +1,7 @@
 export const CHAT_INITIAL_MESSAGES = [
   {
     role: "assistant",
-    content: "Welcome to the Idea Clinic."
-  },
-  {
-    role: "assistant",
-    content: "I am the digital clone of HK Borah. As a Business Architect, I design systems for scale."
-  },
-  {
-    role: "assistant",
-    content: "How can I help you today?"
+    content: "Welcome.\n\nI am HK Borah's digital twin.\n\nI can help you validate ideas, fix broken processes, or scale your startup using the Architectural Scaling Framework.\n\nWhat challenge are you facing today?"
   }
 ];
 
