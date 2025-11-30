@@ -47,13 +47,13 @@ export default function AdminEditor() {
     fetchPosts();
   }, []);
   
-  // Mock form state
+  // Form state
   const [title, setTitle] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [content, setContent] = React.useState("");
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const contentRef = React.useRef<HTMLTextAreaElement>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
   const validateImageDimensions = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -92,19 +92,18 @@ export default function AdminEditor() {
     }
   };
 
-  const insertMarkdown = (before: string, after = "") => {
-    const textarea = contentRef.current;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = content.substring(start, end);
-    const newContent = content.substring(0, start) + before + selectedText + after + content.substring(end);
-    setContent(newContent);
-    setTimeout(() => {
-      textarea.selectionStart = start + before.length;
-      textarea.selectionEnd = start + before.length + selectedText.length;
-      textarea.focus();
-    }, 0);
+  const applyFormatting = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    contentRef.current?.focus();
+    if (contentRef.current) {
+      setContent(contentRef.current.innerHTML);
+    }
+  };
+
+  const handleContentChange = () => {
+    if (contentRef.current) {
+      setContent(contentRef.current.innerHTML);
+    }
   };
 
   const handleDeletePost = (postId: string) => {
@@ -119,10 +118,15 @@ export default function AdminEditor() {
     e.preventDefault();
     setIsLoading(true);
     
+    // Extract plain text for excerpt
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+    
     const newPost = {
         title,
         category,
-        excerpt: content.substring(0, 100) + "...",
+        excerpt: plainText.substring(0, 100).trim() + (plainText.length > 100 ? "..." : ""),
         content,
         date: editingPostId ? posts.find(p => p.id === editingPostId)?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         image: imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
@@ -268,10 +272,8 @@ export default function AdminEditor() {
                     </div>
                     
                     {showPreview ? (
-                      <div className="prose prose-invert max-w-none bg-slate-950 border border-slate-800 rounded p-6">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} className="text-slate-300 leading-relaxed">
-                          {content}
-                        </ReactMarkdown>
+                      <div className="prose prose-invert max-w-none bg-slate-950 border border-slate-800 rounded p-6 text-slate-300">
+                        <div dangerouslySetInnerHTML={{ __html: content }} />
                       </div>
                     ) : (
                     <form onSubmit={handlePublish} className="space-y-6">
@@ -333,12 +335,12 @@ export default function AdminEditor() {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
                               <Label className="text-slate-400">Report Content</Label>
-                              <div className="flex gap-1 bg-slate-900/50 p-2 rounded border border-slate-800">
+                              <div className="flex flex-wrap gap-1 bg-slate-900/50 p-2 rounded border border-slate-800">
                                 <Button
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => insertMarkdown("**", "**")}
+                                  onClick={() => applyFormatting('bold')}
                                   title="Bold"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -348,7 +350,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => insertMarkdown("*", "*")}
+                                  onClick={() => applyFormatting('italic')}
                                   title="Italic"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -358,8 +360,29 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => insertMarkdown("## ", "")}
-                                  title="Heading"
+                                  onClick={() => applyFormatting('underline')}
+                                  title="Underline"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Underline className="h-4 w-4" />
+                                </Button>
+                                <div className="w-px bg-slate-700"></div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => applyFormatting('formatBlock', 'h1')}
+                                  title="Heading 1"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Heading1 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => applyFormatting('formatBlock', 'h2')}
+                                  title="Heading 2"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
                                   <Heading2 className="h-4 w-4" />
@@ -368,21 +391,56 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => insertMarkdown("- ", "")}
+                                  onClick={() => applyFormatting('formatBlock', 'h3')}
+                                  title="Heading 3"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Heading3 className="h-4 w-4" />
+                                </Button>
+                                <div className="w-px bg-slate-700"></div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => applyFormatting('insertUnorderedList')}
                                   title="Bullet List"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
                                   <List className="h-4 w-4" />
                                 </Button>
+                                <div className="w-px bg-slate-700"></div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => applyFormatting('indent')}
+                                  title="Indent"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Indent className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => applyFormatting('outdent')}
+                                  title="Outdent"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Outdent className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
-                            <Textarea 
+                            <div 
                                 ref={contentRef}
-                                value={content} 
-                                onChange={e => setContent(e.target.value)}
-                                placeholder="Begin typing... Use formatting buttons above for markdown support" 
-                                className="bg-slate-950 border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed font-mono text-sm" 
-                            />
+                                contentEditable
+                                onInput={handleContentChange}
+                                suppressContentEditableWarning
+                                className="bg-slate-950 border border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed p-4 rounded overflow-auto focus:outline-none focus:border-amber-500/30"
+                                style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
+                            >
+                              {content || 'Begin typing...'}
+                            </div>
                         </div>
 
                         <div className="flex justify-between pt-4">
