@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save, Plus, Upload } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Heading2, List, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
 import { useToast } from "@/hooks/use-toast";
@@ -36,16 +36,66 @@ export default function AdminEditor() {
   const [content, setContent] = React.useState("");
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const contentRef = React.useRef<HTMLTextAreaElement>(null);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  const validateImageDimensions = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          if (img.width === 1920 && img.height === 1080) {
+            resolve(true);
+          } else {
+            toast({
+              title: "Invalid Image Dimensions",
+              description: `Image must be 1920x1080. Current: ${img.width}x${img.height}`,
+              variant: "destructive"
+            });
+            resolve(false);
+          }
+        };
+        img.src = e.target?.result as string;
       };
       reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const isValid = await validateImageDimensions(file);
+      if (isValid) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
+  };
+
+  const insertMarkdown = (before: string, after = "") => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const newContent = content.substring(0, start) + before + selectedText + after + content.substring(end);
+    setContent(newContent);
+    setTimeout(() => {
+      textarea.selectionStart = start + before.length;
+      textarea.selectionEnd = start + before.length + selectedText.length;
+      textarea.focus();
+    }, 0);
+  };
+
+  const handleDeletePost = (postId: string) => {
+    setPosts(posts.filter(p => p.id !== postId));
+    toast({
+      title: "Report Deleted",
+      description: "The intelligence report has been removed from the vault.",
+    });
   };
 
   const handlePublish = (e: React.FormEvent) => {
@@ -115,9 +165,17 @@ export default function AdminEditor() {
                 </div>
                 <div className="space-y-4">
                     {posts.map(post => (
-                        <div key={post.id} className="p-4 bg-slate-900/30 hover:bg-slate-900/60 rounded border border-slate-800/50 cursor-pointer transition-colors">
-                            <h4 className="text-sm font-medium text-slate-300 mb-1">{post.title}</h4>
-                            <span className="text-[10px] font-mono text-slate-500 uppercase">{post.category} • {post.date}</span>
+                        <div key={post.id} className="p-4 bg-slate-900/30 hover:bg-slate-900/60 rounded border border-slate-800/50 group transition-colors flex justify-between items-start">
+                            <div className="flex-1">
+                              <h4 className="text-sm font-medium text-slate-300 mb-1">{post.title}</h4>
+                              <span className="text-[10px] font-mono text-slate-500 uppercase">{post.date}</span>
+                            </div>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-400"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                         </div>
                     ))}
                 </div>
@@ -185,11 +243,57 @@ export default function AdminEditor() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-slate-400">Report Content</Label>
+                            <div className="flex justify-between items-center">
+                              <Label className="text-slate-400">Report Content</Label>
+                              <div className="flex gap-1 bg-slate-900/50 p-2 rounded border border-slate-800">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => insertMarkdown("**", "**")}
+                                  title="Bold"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Bold className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => insertMarkdown("*", "*")}
+                                  title="Italic"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Italic className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => insertMarkdown("## ", "")}
+                                  title="Heading"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Heading2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => insertMarkdown("- ", "")}
+                                  title="Bullet List"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <List className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
                             <Textarea 
-                                value={content} onChange={e => setContent(e.target.value)}
-                                placeholder="Begin typing..." 
-                                className="bg-slate-950 border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed" 
+                                ref={contentRef}
+                                value={content} 
+                                onChange={e => setContent(e.target.value)}
+                                placeholder="Begin typing... Use formatting buttons above for markdown support" 
+                                className="bg-slate-950 border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed font-mono text-sm" 
                             />
                         </div>
 
