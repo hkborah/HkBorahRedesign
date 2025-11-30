@@ -20,7 +20,7 @@ export function VaultMenu({ isOpen, onClose }: VaultMenuProps) {
   };
 
   const links = [
-    { name: "Idea Clinic", path: "/", label: "Idea Clinic (Chatbot)" },
+    { name: "AI Interface", path: "/", label: "AI Interface" },
     { name: "Architectural Scaling Framework", path: "/framework", label: "The Codex (Book)" },
     { name: "HK's Journal", path: "/journal", label: "The Journal (Blog)" },
     { name: "About HK Borah", path: "/about", label: "About HK Borah" },
