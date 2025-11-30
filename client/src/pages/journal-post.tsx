@@ -2,14 +2,38 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Share2 } from "lucide-react";
 import { Link, useRoute } from "wouter";
-import { BLOG_POSTS } from "@/lib/data";
 import logoUrl from "@assets/hkborah-logo.png";
 import NotFound from "@/pages/not-found";
+import * as React from "react";
 
 export default function JournalPost() {
   const [, params] = useRoute("/journal/:id");
-  const post = BLOG_POSTS.find(p => p.id === params?.id);
+  const [post, setPost] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
 
+  React.useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const response = await fetch(`/api/blog/posts/${params?.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPost(data);
+        } else {
+          setPost(null);
+        }
+      } catch (error) {
+        console.error("Error fetching post:", error);
+        setPost(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (params?.id) {
+      fetchPost();
+    }
+  }, [params?.id]);
+
+  if (loading) return <MainLayout><div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-slate-400">Loading...</p></div></MainLayout>;
   if (!post) return <NotFound />;
 
   return (
