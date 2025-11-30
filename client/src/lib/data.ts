@@ -78,6 +78,35 @@ export interface BlogPost {
     content: string;
     date: string;
     slug: string;
+    image: string;
 }
 
-export const BLOG_POSTS: BlogPost[] = [];
+export const BLOG_POSTS: BlogPost[] = [
+    {
+        id: "1",
+        title: "The Architecture of Scaling",
+        excerpt: "Understanding how organizations evolve from startup chaos to enterprise discipline through systematic architectural thinking.",
+        content: "Full content here",
+        date: "Nov 15, 2024",
+        slug: "architecture-of-scaling",
+        image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop"
+    },
+    {
+        id: "2",
+        title: "Founder Operating Systems",
+        excerpt: "How to build governance protocols that keep co-founder relationships thriving while making critical business decisions.",
+        content: "Full content here",
+        date: "Nov 8, 2024",
+        slug: "founder-operating-systems",
+        image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop"
+    },
+    {
+        id: "3",
+        title: "The MVP Blueprint",
+        excerpt: "A framework for building the absolute minimum product that tests your core hypothesis without wasting engineering resources.",
+        content: "Full content here",
+        date: "Nov 1, 2024",
+        slug: "mvp-blueprint",
+        image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop"
+    }
+];
