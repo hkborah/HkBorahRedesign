@@ -73,7 +73,7 @@ export default function Login() {
                         <Input 
                           id="email" 
                           type="email" 
-                          placeholder="hkborah@gmail.com" 
+                          placeholder="Enter email" 
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
@@ -91,11 +91,6 @@ export default function Login() {
                           className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
                           required 
                         />
-                    </div>
-                    <div className="bg-slate-950/50 border border-slate-800 rounded p-3 text-xs font-mono text-slate-400">
-                        <p className="mb-1">Demo Credentials:</p>
-                        <p>Email: hkborah@gmail.com</p>
-                        <p>Password: ScalingFramework2024</p>
                     </div>
                     <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-medium" disabled={isLoading}>
                         {isLoading ? (
