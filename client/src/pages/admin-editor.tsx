@@ -33,6 +33,7 @@ export default function AdminEditor() {
   const [isEditing, setIsEditing] = React.useState(false);
   const [showPreview, setShowPreview] = React.useState(false);
   const [editingPostId, setEditingPostId] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
   
   // Mock form state
   const [title, setTitle] = React.useState("");
@@ -104,6 +105,7 @@ export default function AdminEditor() {
 
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
     const newPost = {
         title,
@@ -126,9 +128,10 @@ export default function AdminEditor() {
           const updated = await response.json();
           setPosts(posts.map(p => p.id === editingPostId ? updated : p));
           toast({
-            title: "Report Updated",
-            description: "Changes have been saved to the vault.",
+            title: "✓ Report Updated",
+            description: `"${title}" has been updated in your Archives.`,
           });
+          resetForm();
         }
       } else {
         const response = await fetch("/api/blog/posts", {
@@ -140,12 +143,12 @@ export default function AdminEditor() {
           const created = await response.json();
           setPosts([created, ...posts]);
           toast({
-            title: "Report Published",
-            description: "Your intelligence report is now in the vault.",
+            title: "✓ Report Published",
+            description: `"${title}" is now visible in your Archives and on the Journal.`,
           });
+          resetForm();
         }
       }
-      resetForm();
     } catch (error) {
       console.error("Error publishing post:", error);
       toast({
@@ -153,6 +156,8 @@ export default function AdminEditor() {
         description: "Failed to publish report. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -369,11 +374,11 @@ export default function AdminEditor() {
                         </div>
 
                         <div className="flex justify-between pt-4">
-                            <Button type="button" onClick={resetForm} variant="ghost" className="text-slate-400 hover:text-slate-300">
+                            <Button type="button" onClick={resetForm} variant="ghost" className="text-slate-400 hover:text-slate-300" disabled={isLoading}>
                                 Clear Form
                             </Button>
-                            <Button type="submit" className="bg-amber-500 hover:bg-amber-600 text-slate-950">
-                                <Save className="h-4 w-4 mr-2" /> {editingPostId ? "Update Report" : "Publish to Vault"}
+                            <Button type="submit" className="bg-amber-500 hover:bg-amber-600 text-slate-950 disabled:opacity-50 disabled:cursor-not-allowed" disabled={isLoading || !title || !content}>
+                                <Save className="h-4 w-4 mr-2" /> {isLoading ? "Processing..." : (editingPostId ? "Update Report" : "Publish to Vault")}
                             </Button>
                         </div>
                     </form>
