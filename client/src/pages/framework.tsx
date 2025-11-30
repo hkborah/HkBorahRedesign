@@ -63,9 +63,9 @@ export default function Framework() {
                 {/* ASF Process Diagram */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12">
                     <div className="flex gap-6 items-flex-start relative">
-                        {/* Step 01 */}
+                        {/* Step 01 - Parallelogram */}
                         <div className="flex-1 flex flex-col items-center">
-                            <div className="w-full bg-gradient-to-br from-amber-600 to-amber-700 rounded-lg p-8 mb-8 h-48 flex flex-col items-center justify-center text-center">
+                            <div className="w-full bg-gradient-to-br from-amber-600 to-amber-700 p-8 mb-8 h-48 flex flex-col items-center justify-center text-center" style={{ clipPath: 'polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)' }}>
                                 <div className="text-5xl mb-4">⚙️</div>
                                 <h3 className="text-lg font-serif font-bold text-white mb-2">Scaling Diagnostic Matrix</h3>
                                 <p className="text-sm text-amber-100">Identify Stage of Growth and Point of Pain</p>
@@ -73,7 +73,7 @@ export default function Framework() {
                             <p className="text-xs font-mono text-amber-500 font-semibold">STEP 01</p>
                         </div>
 
-                        {/* Step 02 */}
+                        {/* Step 02 - Rectangle */}
                         <div className="flex-1 flex flex-col items-center">
                             <div className="w-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg p-8 mb-8 h-48 flex flex-col items-center justify-center text-center">
                                 <div className="text-5xl mb-4">📖</div>
@@ -83,9 +83,9 @@ export default function Framework() {
                             <p className="text-xs font-mono text-slate-400 font-semibold">STEP 02</p>
                         </div>
 
-                        {/* Step 03 */}
+                        {/* Step 03 - Reverse Parallelogram */}
                         <div className="flex-1 flex flex-col items-center">
-                            <div className="w-full bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-lg p-8 mb-8 h-48 flex flex-col items-center justify-center text-center">
+                            <div className="w-full bg-gradient-to-br from-emerald-600 to-emerald-700 p-8 mb-8 h-48 flex flex-col items-center justify-center text-center" style={{ clipPath: 'polygon(0% 0%, 85% 0%, 100% 100%, 15% 100%)' }}>
                                 <div className="text-5xl mb-4">💬</div>
                                 <h3 className="text-lg font-serif font-bold text-white mb-2">Idea Clinic</h3>
                                 <p className="text-sm text-emerald-100">Discuss solutions to 20% of unique problems</p>
