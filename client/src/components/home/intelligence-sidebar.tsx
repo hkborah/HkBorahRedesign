@@ -17,6 +17,7 @@ export function IntelligenceSidebar() {
         const response = await fetch("/api/blog/posts");
         if (response.ok) {
           const data = await response.json();
+          // Use API posts directly - they already include seeded defaults + new posts
           setPosts(data && data.length > 0 ? data : BLOG_POSTS);
         } else {
           setPosts(BLOG_POSTS);

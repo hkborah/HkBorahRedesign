@@ -28,10 +28,8 @@ export default function Journal() {
         const response = await fetch("/api/blog/posts");
         if (response.ok) {
           const data = await response.json();
-          // Combine API posts with initial BLOG_POSTS to show both
-          const apiPosts = data && data.length > 0 ? data : [];
-          const allPosts = [...apiPosts, ...BLOG_POSTS.filter(bp => !data.some((dp: any) => dp.id === bp.id))];
-          setPosts(allPosts.length > 0 ? allPosts : BLOG_POSTS);
+          // Use API posts directly - they already include seeded defaults + new posts
+          setPosts(data && data.length > 0 ? data : BLOG_POSTS);
         } else {
           setPosts(BLOG_POSTS);
         }
