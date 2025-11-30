@@ -150,8 +150,8 @@ export function DigitalTwin() {
                     <div className="text-sm leading-relaxed font-light prose prose-invert max-w-none">
                       <ReactMarkdown 
                         components={{
-                          p: ({node, ...props}) => <p className="m-0 mb-2 last:mb-0" {...props} />,
-                          strong: ({node, ...props}) => <strong className="font-semibold" {...props} />,
+                          p: ({children}) => <p className="m-0 mb-2 last:mb-0">{children}</p>,
+                          strong: ({children}) => <strong className="font-semibold">{children}</strong>,
                         }}
                       >
                         {msg.content}
