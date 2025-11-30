@@ -75,7 +75,9 @@ export function IdeaClinic() {
   };
 
   const handleSaveChat = async () => {
-      if (messages.length <= 2) {
+      // Only allow saving if there's actual user interaction (more than initial messages)
+      const userMessages = messages.filter(m => m.role === 'user');
+      if (userMessages.length === 0) {
           toast({
               title: "No Chat History",
               description: "Start a conversation to save your session.",
@@ -101,17 +103,19 @@ export function IdeaClinic() {
           });
 
           if (response.ok) {
-              // Also try to save to Google Drive via external API (silent archival)
-              await fetch(SAVE_API, {
+              // Save to Google Drive via external API
+              const driveResponse = await fetch(SAVE_API, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ history: messages })
-              }).catch(err => {
-                  console.error("Background archival failed:", err);
               });
+              
+              if (!driveResponse.ok) {
+                  console.warn("Google Drive save returned status:", driveResponse.status);
+              }
           }
 
-          // Trigger Client-Side Download (always succeeds)
+          // Trigger Client-Side Download
           const blob = new Blob([textContent], { type: 'text/plain' });
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
