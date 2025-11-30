@@ -189,9 +189,9 @@ export function DigitalTwin() {
           <Button 
             size="icon" 
             onClick={handleSaveChat}
-            disabled={isSaving}
-            className="h-12 w-12 bg-slate-900 hover:bg-slate-800 text-amber-500 flex-shrink-0"
-            title="Save chat"
+            disabled={isSaving || messages.length <= 2}
+            className="h-12 w-12 bg-slate-900 hover:bg-slate-800 text-amber-500 disabled:text-slate-600 disabled:hover:bg-slate-900 flex-shrink-0"
+            title={messages.length <= 2 ? "Start a conversation to save" : "Save chat"}
           >
             {isSaving ? <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div> : <Save className="h-4 w-4" />}
           </Button>
