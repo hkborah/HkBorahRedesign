@@ -1,6 +1,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Cpu, Save, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -146,9 +147,16 @@ export function DigitalTwin() {
                       ? 'bg-slate-900/80 border-slate-800 text-slate-200' 
                       : 'bg-amber-500/10 border-amber-500/20 text-amber-100'
                   }`}>
-                    <p className="text-sm leading-relaxed font-light">
-                      {msg.content}
-                    </p>
+                    <div className="text-sm leading-relaxed font-light prose prose-invert max-w-none">
+                      <ReactMarkdown 
+                        components={{
+                          p: ({node, ...props}) => <p className="m-0 mb-2 last:mb-0" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-semibold" {...props} />,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </motion.div>
               ))}
