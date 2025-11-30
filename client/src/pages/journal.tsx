@@ -7,8 +7,18 @@ import logoUrl from "@assets/hkborah-logo.png";
 import { motion } from "framer-motion";
 
 export default function Journal() {
-  const featuredPost = BLOG_POSTS[0];
-  const remainingPosts = BLOG_POSTS.slice(1);
+  const featuredPost = BLOG_POSTS?.[0];
+  const remainingPosts = BLOG_POSTS?.slice(1) || [];
+
+  if (!featuredPost) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+          <p className="text-slate-400">No blog posts available</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

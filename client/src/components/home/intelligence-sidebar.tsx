@@ -53,7 +53,7 @@ export function IntelligenceSidebar() {
                       <h4 className="text-sm font-medium text-slate-200 group-hover:text-amber-500 transition-colors line-clamp-2 leading-snug">
                         {post.title}
                       </h4>
-                      <span className="text-[10px] font-mono text-slate-500 mt-1 block uppercase">{post.category}</span>
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-2 font-light leading-relaxed">{post.excerpt}</p>
                     </div>
                   </div>
                 </Link>
