@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Heading2, List, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Heading2, List, Trash2, Eye, Edit } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
 import { useToast } from "@/hooks/use-toast";
 import { BLOG_POSTS } from "@/lib/data";
 import { useAuth } from "@/lib/auth-context";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function AdminEditor() {
   const { toast } = useToast();
@@ -29,6 +31,8 @@ export default function AdminEditor() {
 
   const [posts, setPosts] = React.useState(BLOG_POSTS);
   const [isEditing, setIsEditing] = React.useState(false);
+  const [showPreview, setShowPreview] = React.useState(false);
+  const [editingPostId, setEditingPostId] = React.useState<string | null>(null);
   
   // Mock form state
   const [title, setTitle] = React.useState("");
@@ -102,17 +106,37 @@ export default function AdminEditor() {
     e.preventDefault();
     
     const newPost = {
-        id: String(posts.length + 1),
+        id: editingPostId || String(posts.length + 1),
         title,
         category,
         excerpt: content.substring(0, 100) + "...",
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        content,
+        date: editingPostId ? posts.find(p => p.id === editingPostId)?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         image: imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
         slug: title.toLowerCase().replace(/\s+/g, '-')
     };
 
-    setPosts([newPost, ...posts]);
+    if (editingPostId) {
+      setPosts(posts.map(p => p.id === editingPostId ? newPost : p));
+      toast({
+        title: "Report Updated",
+        description: "Changes have been saved to the vault.",
+      });
+    } else {
+      setPosts([newPost, ...posts]);
+      toast({
+        title: "Intelligence Published",
+        description: "The report has been encrypted and stored in the vault.",
+      });
+    }
+    
+    resetForm();
+  };
+
+  const resetForm = () => {
     setIsEditing(false);
+    setEditingPostId(null);
+    setShowPreview(false);
     setTitle("");
     setCategory("");
     setContent("");
@@ -120,11 +144,16 @@ export default function AdminEditor() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
 
-    toast({
-        title: "Intelligence Published",
-        description: "The report has been encrypted and stored in the vault.",
-    });
+  const loadPostForEdit = (post: any) => {
+    setEditingPostId(post.id);
+    setTitle(post.title);
+    setCategory(post.category || "");
+    setContent(post.content);
+    setImagePreview(post.image);
+    setIsEditing(true);
+    setShowPreview(false);
   };
 
   return (
@@ -165,17 +194,17 @@ export default function AdminEditor() {
                 </div>
                 <div className="space-y-4">
                     {posts.map(post => (
-                        <div key={post.id} className="p-4 bg-slate-900/30 hover:bg-slate-900/60 rounded border border-slate-800/50 group transition-colors flex justify-between items-start">
-                            <div className="flex-1">
-                              <h4 className="text-sm font-medium text-slate-300 mb-1">{post.title}</h4>
-                              <span className="text-[10px] font-mono text-slate-500 uppercase">{post.date}</span>
+                        <div key={post.id} className="p-4 bg-slate-900/30 hover:bg-slate-900/60 rounded border border-slate-800/50 group transition-colors cursor-pointer" onClick={() => loadPostForEdit(post)}>
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1">
+                                <h4 className="text-sm font-medium text-slate-300 mb-1">{post.title}</h4>
+                                <span className="text-[10px] font-mono text-slate-500 uppercase">{post.date}</span>
+                              </div>
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                <button onClick={(e) => { e.stopPropagation(); loadPostForEdit(post); }} className="text-amber-500 hover:text-amber-400"><Edit className="h-4 w-4" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }} className="text-red-500 hover:text-red-400"><Trash2 className="h-4 w-4" /></button>
+                              </div>
                             </div>
-                            <button
-                              onClick={() => handleDeletePost(post.id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-400"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
                         </div>
                     ))}
                 </div>
@@ -184,8 +213,27 @@ export default function AdminEditor() {
             {/* Editor Area */}
             <div className="flex-1">
                 <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8">
-                    <h2 className="text-2xl font-serif font-bold text-slate-100 mb-8">New Intelligence Report</h2>
+                    <div className="flex justify-between items-center mb-8">
+                      <h2 className="text-2xl font-serif font-bold text-slate-100">{editingPostId ? "Edit Intelligence Report" : "New Intelligence Report"}</h2>
+                      {isEditing && (
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setShowPreview(!showPreview)}
+                          className="border-slate-700 text-slate-300 hover:bg-slate-800 gap-2"
+                        >
+                          <Eye className="h-4 w-4" /> {showPreview ? "Edit" : "Preview"}
+                        </Button>
+                      )}
+                    </div>
                     
+                    {showPreview ? (
+                      <div className="prose prose-invert max-w-none bg-slate-950 border border-slate-800 rounded p-6">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} className="text-slate-300 leading-relaxed">
+                          {content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
                     <form onSubmit={handlePublish} className="space-y-6">
                         <div className="space-y-2">
                             <Label className="text-slate-400">Headline</Label>
@@ -297,12 +345,16 @@ export default function AdminEditor() {
                             />
                         </div>
 
-                        <div className="flex justify-end pt-4">
+                        <div className="flex justify-between pt-4">
+                            <Button type="button" onClick={resetForm} variant="ghost" className="text-slate-400 hover:text-slate-300">
+                                Clear Form
+                            </Button>
                             <Button type="submit" className="bg-amber-500 hover:bg-amber-600 text-slate-950">
-                                <Save className="h-4 w-4 mr-2" /> Publish to Vault
+                                <Save className="h-4 w-4 mr-2" /> {editingPostId ? "Update Report" : "Publish to Vault"}
                             </Button>
                         </div>
                     </form>
+                    )}
                 </div>
             </div>
         </div>
