@@ -106,6 +106,59 @@ export default function AdminEditor() {
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+    
+    if (text) {
+      // Create a temporary container to parse the pasted HTML
+      const temp = document.createElement('div');
+      temp.innerHTML = text;
+      
+      // Sanitize: keep only safe tags and remove all attributes
+      const sanitize = (node: Node): Node => {
+        if (node.nodeType === 3) return node; // Text node
+        if (node.nodeType !== 1) return node; // Not element
+        
+        const el = node as Element;
+        const tagName = el.tagName.toLowerCase();
+        
+        // Allowed tags
+        const allowedTags = ['p', 'br', 'b', 'i', 'u', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'blockquote'];
+        
+        if (!allowedTags.includes(tagName)) {
+          // For disallowed tags, keep children but not the tag
+          const fragment = document.createDocumentFragment();
+          Array.from(el.childNodes).forEach(child => {
+            fragment.appendChild(sanitize(child.cloneNode(true)));
+          });
+          return fragment;
+        }
+        
+        // Create clean element without attributes
+        const clean = document.createElement(tagName);
+        Array.from(el.childNodes).forEach(child => {
+          clean.appendChild(sanitize(child.cloneNode(true)));
+        });
+        return clean;
+      };
+      
+      const sanitized = sanitize(temp);
+      
+      // Insert sanitized content
+      const range = window.getSelection()?.getRangeAt(0);
+      if (range) {
+        range.deleteContents();
+        range.insertNode(sanitized);
+        range.collapse(false);
+      }
+      
+      if (contentRef.current) {
+        setContent(contentRef.current.innerHTML);
+      }
+    }
+  };
+
   const handleDeletePost = (postId: string) => {
     setPosts(posts.filter(p => p.id !== postId));
     toast({
@@ -435,6 +488,7 @@ export default function AdminEditor() {
                                 ref={contentRef}
                                 contentEditable
                                 onInput={handleContentChange}
+                                onPaste={handlePaste}
                                 suppressContentEditableWarning
                                 className="bg-slate-950 border border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed p-4 rounded overflow-auto focus:outline-none focus:border-amber-500/30"
                                 style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
