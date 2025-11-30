@@ -85,11 +85,11 @@ export function IntelligenceSidebar() {
               </div>
               
               {/* Book Cover Thumbnail */}
-              <div className="w-full h-auto">
+              <div className="w-16 h-24 flex-shrink-0">
                 <img 
                   src={bookCoverUrl}
                   alt="The Order of Chaos"
-                  className="w-full h-auto rounded border border-amber-500/30 shadow-lg shadow-amber-900/20 group-hover:shadow-amber-900/40 group-hover:border-amber-500/60 transition-all"
+                  className="w-full h-full rounded border border-amber-500/30 shadow-lg shadow-amber-900/20 group-hover:shadow-amber-900/40 group-hover:border-amber-500/60 transition-all object-cover object-left-top"
                 />
               </div>
             </div>
