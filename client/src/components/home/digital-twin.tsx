@@ -120,17 +120,6 @@ export function DigitalTwin() {
           <h2 className="text-lg font-serif font-bold text-slate-100">HK Borah</h2>
           <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Digital Twin & Advisor</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleSaveChat}
-            disabled={isSaving}
-            className="text-slate-400 hover:text-amber-500 h-8 w-8"
-          >
-            {isSaving ? <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div> : <Save className="h-4 w-4" />}
-          </Button>
-        </div>
       </div>
 
       {/* Messages */}
@@ -188,20 +177,29 @@ export function DigitalTwin() {
 
       {/* Input */}
       <div className="p-6 border-t border-slate-800">
-        <div className="relative">
+        <div className="relative flex gap-2">
           <Input 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about scaling, chaos, or strategy..."
             disabled={isTyping}
-            className="bg-slate-900/50 border-slate-800 h-12 pl-4 pr-12 rounded focus-visible:ring-amber-500/50 text-slate-200 placeholder:text-slate-600 font-light"
+            className="bg-slate-900/50 border-slate-800 h-12 pl-4 pr-4 rounded focus-visible:ring-amber-500/50 text-slate-200 placeholder:text-slate-600 font-light flex-1"
           />
+          <Button 
+            size="icon" 
+            onClick={handleSaveChat}
+            disabled={isSaving}
+            className="h-12 w-12 bg-slate-900 hover:bg-slate-800 text-amber-500 flex-shrink-0"
+            title="Save chat"
+          >
+            {isSaving ? <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div> : <Save className="h-4 w-4" />}
+          </Button>
           <Button 
             size="icon" 
             onClick={handleSend}
             disabled={isTyping || !input.trim()}
-            className="absolute right-1 top-1 h-10 w-10 bg-slate-900 hover:bg-slate-800 text-amber-500"
+            className="h-12 w-12 bg-slate-900 hover:bg-slate-800 text-amber-500 flex-shrink-0"
           >
             <Send className="h-4 w-4" />
           </Button>
