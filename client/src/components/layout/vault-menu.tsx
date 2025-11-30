@@ -20,10 +20,10 @@ export function VaultMenu({ isOpen, onClose }: VaultMenuProps) {
   };
 
   const links = [
-    { name: "Idea Clinic", path: "https://www.linkedin.com/groups/15130009/", label: "Idea Clinic (LinkedIn)", external: true },
-    { name: "Architectural Scaling Framework", path: "/framework", label: "The Codex (Book)" },
-    { name: "HK's Journal", path: "/journal", label: "The Journal (Blog)" },
-    { name: "About HK Borah", path: "/about", label: "About HK Borah" },
+    { name: "AI Interface", path: "/", label: "AI Interface", external: false },
+    { name: "Architectural Scaling Framework", path: "/framework", label: "The Codex (Book)", external: false },
+    { name: "HK's Journal", path: "/journal", label: "The Journal (Blog)", external: false },
+    { name: "About HK Borah", path: "/about", label: "About HK Borah", external: false },
   ];
 
   return (
