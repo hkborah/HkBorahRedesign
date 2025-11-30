@@ -61,63 +61,69 @@ export default function Framework() {
                 </div>
 
                 {/* ASF Process Diagram */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12">
-                    {/* Flow Line */}
-                    <div className="absolute left-12 right-12 top-1/2 transform -translate-y-1/2 h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500 rounded-full" style={{ width: 'calc(100% - 96px)' }}></div>
-
-                    <div className="flex gap-8 items-flex-start relative z-10">
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 relative">
+                    <div className="flex gap-6 items-start justify-center">
                         {/* Step 01 */}
-                        <div className="flex-1 flex flex-col items-center">
-                            {/* Circular Badge */}
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-6 shadow-lg">
-                                <div className="text-4xl">⚙️</div>
+                        <div className="flex flex-col items-center" style={{ width: '280px' }}>
+                            {/* Line connecting point */}
+                            <div className="relative w-full flex justify-center mb-2">
+                                <div className="absolute h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500" style={{ width: '100%', top: '20px' }}></div>
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg relative z-10">
+                                    <div className="text-3xl">⚙️</div>
+                                </div>
                             </div>
                             
                             {/* Trapezoid Box */}
-                            <div className="w-full relative mb-6" style={{ perspective: '1000px' }}>
-                                <div className="bg-gradient-to-br from-amber-600 to-amber-700 pt-12 pb-8 px-6 text-center" style={{ clipPath: 'polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%)', transform: 'rotateX(5deg)' }}>
-                                    <h3 className="text-base font-serif font-bold text-white mb-2">Scaling Diagnostic Matrix</h3>
+                            <div className="w-full mt-6" style={{ perspective: '1000px' }}>
+                                <div className="bg-gradient-to-br from-amber-600 to-amber-700 py-8 px-6 text-center" style={{ clipPath: 'polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)' }}>
+                                    <h3 className="text-sm font-serif font-bold text-white mb-1">Scaling Diagnostic Matrix</h3>
                                     <p className="text-xs text-amber-100">Identify Stage of Growth and Point of Pain</p>
                                 </div>
                             </div>
                             
-                            <p className="text-xs font-mono text-amber-500 font-semibold">STEP 01</p>
+                            <p className="text-xs font-mono text-amber-500 font-semibold mt-4">STEP 01</p>
                         </div>
 
                         {/* Step 02 */}
-                        <div className="flex-1 flex flex-col items-center">
-                            {/* Circular Badge */}
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center mb-6 shadow-lg">
-                                <div className="text-4xl">📖</div>
+                        <div className="flex flex-col items-center" style={{ width: '280px' }}>
+                            {/* Line connecting point */}
+                            <div className="relative w-full flex justify-center mb-2">
+                                <div className="absolute h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500" style={{ width: '100%', top: '20px' }}></div>
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center shadow-lg relative z-10">
+                                    <div className="text-3xl">📖</div>
+                                </div>
                             </div>
                             
                             {/* Trapezoid Box */}
-                            <div className="w-full relative mb-6" style={{ perspective: '1000px' }}>
-                                <div className="bg-gradient-to-br from-slate-700 to-slate-800 pt-12 pb-8 px-6 text-center" style={{ clipPath: 'polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%)', transform: 'rotateX(5deg)' }}>
-                                    <h3 className="text-base font-serif font-bold text-white mb-2">Case File Codex</h3>
+                            <div className="w-full mt-6" style={{ perspective: '1000px' }}>
+                                <div className="bg-gradient-to-br from-slate-700 to-slate-800 py-8 px-6 text-center" style={{ clipPath: 'polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)' }}>
+                                    <h3 className="text-sm font-serif font-bold text-white mb-1">Case File Codex</h3>
                                     <p className="text-xs text-slate-300">Locate solutions to 80% of problems faced by founders</p>
                                 </div>
                             </div>
                             
-                            <p className="text-xs font-mono text-slate-400 font-semibold">STEP 02</p>
+                            <p className="text-xs font-mono text-slate-400 font-semibold mt-4">STEP 02</p>
                         </div>
 
                         {/* Step 03 */}
-                        <div className="flex-1 flex flex-col items-center">
-                            {/* Circular Badge */}
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-6 shadow-lg">
-                                <div className="text-4xl">💬</div>
+                        <div className="flex flex-col items-center" style={{ width: '280px' }}>
+                            {/* Line connecting point */}
+                            <div className="relative w-full flex justify-center mb-2">
+                                <div className="absolute h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500" style={{ width: '100%', top: '20px' }}></div>
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg relative z-10">
+                                    <div className="text-3xl">💬</div>
+                                </div>
                             </div>
                             
                             {/* Trapezoid Box */}
-                            <div className="w-full relative mb-6" style={{ perspective: '1000px' }}>
-                                <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 pt-12 pb-8 px-6 text-center" style={{ clipPath: 'polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%)', transform: 'rotateX(5deg)' }}>
-                                    <h3 className="text-base font-serif font-bold text-white mb-2">Idea Clinic</h3>
+                            <div className="w-full mt-6" style={{ perspective: '1000px' }}>
+                                <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 py-8 px-6 text-center" style={{ clipPath: 'polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)' }}>
+                                    <h3 className="text-sm font-serif font-bold text-white mb-1">Idea Clinic</h3>
                                     <p className="text-xs text-emerald-100">Discuss solutions to 20% of unique problems</p>
                                 </div>
                             </div>
                             
-                            <p className="text-xs font-mono text-emerald-400 font-semibold">STEP 03</p>
+                            <p className="text-xs font-mono text-emerald-400 font-semibold mt-4">STEP 03</p>
                         </div>
                     </div>
                 </div>
