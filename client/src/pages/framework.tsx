@@ -1,15 +1,21 @@
+import * as React from "react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Share2 } from "lucide-react";
 import { Link } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
-import bookCoverUrl from "@assets/book-cover.png";
+import { DiagnosticMatrix } from "@/components/framework/diagnostic-matrix";
+import { CaseFileCodex } from "@/components/framework/case-file-codex";
+import { IdeaClinic } from "@/components/framework/idea-clinic";
+import { CODEX_ENTRIES, CodexEntry } from "@/lib/data";
 
 export default function Framework() {
+  const [selectedEntry, setSelectedEntry] = React.useState<CodexEntry | null>(CODEX_ENTRIES[0]);
+
   return (
     <MainLayout>
       <div className="min-h-screen bg-slate-950 flex flex-col">
-        {/* Header for internal page */}
+        {/* Header */}
         <div className="container mx-auto px-6 py-6 flex justify-between items-center">
             <Link href="/">
                 <img src={logoUrl} alt="HK Borah" className="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity cursor-pointer" />
@@ -21,46 +27,71 @@ export default function Framework() {
             </Link>
         </div>
 
-        <div className="flex-1 container mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-center gap-16">
-            {/* Book Cover */}
-            <div className="w-full md:w-1/3 flex justify-center">
-                <div className="relative group">
-                    <div className="absolute -inset-1 bg-amber-500 rounded blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                    <img 
-                        src={bookCoverUrl} 
-                        alt="The Order of Chaos Book Cover" 
-                        className="relative rounded shadow-2xl transform transition duration-500 group-hover:-translate-y-2 w-[300px] md:w-[350px]"
-                    />
-                </div>
+        <div className="container mx-auto px-6 py-12 max-w-7xl space-y-24">
+            {/* Intro */}
+            <div className="text-center max-w-3xl mx-auto space-y-6">
+                <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">The Architectural Scaling Framework</span>
+                <h1 className="text-5xl md:text-6xl font-serif font-bold text-slate-100">
+                    From Chaos to <span className="text-amber-500">Scale</span>
+                </h1>
+                <p className="text-xl text-slate-400 leading-relaxed font-light">
+                    An enduring company is not stumbled upon; it is architected. 
+                    Use the diagnostic matrix below to identify your zone of pain and access the corresponding Case File Codex.
+                </p>
             </div>
 
-            {/* Content */}
-            <div className="w-full md:w-1/2 space-y-8">
-                <div>
-                    <span className="text-amber-500 font-mono text-sm uppercase tracking-widest mb-2 block">Architectural Scaling Framework</span>
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-slate-100 mb-6">The Order of Chaos</h1>
-                    <p className="text-xl text-slate-400 leading-relaxed font-light">
-                        A Founder's Blueprint to Scaling Businesses. This is not just a book; it is a manual for constructing enduring enterprises. 
-                        Learn how to identify friction, leverage chaos, and architect systems that scale effortlessly.
-                    </p>
+            {/* 1. Diagnostic Matrix */}
+            <div className="space-y-8">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="h-px flex-1 bg-slate-800"></div>
+                    <span className="text-sm font-mono text-slate-500 uppercase tracking-widest">01. Scaling Diagnostic Matrix</span>
+                    <div className="h-px flex-1 bg-slate-800"></div>
                 </div>
+                <DiagnosticMatrix onSelect={setSelectedEntry} selectedEntry={selectedEntry} />
+            </div>
 
-                <div className="space-y-4 border-l-2 border-slate-800 pl-6 py-2">
-                    <h3 className="text-slate-200 font-medium text-lg">What's Inside:</h3>
-                    <ul className="space-y-2 text-slate-400 font-light">
-                        <li>• The Anatomy of Business Friction</li>
-                        <li>• Systems Thinking for Founders</li>
-                        <li>• From Startup Chaos to Enterprise Order</li>
-                        <li>• The Architectural Mindset</li>
-                    </ul>
+            {/* 2. Case File Codex */}
+            <div className="space-y-8 min-h-[600px]">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="h-px flex-1 bg-slate-800"></div>
+                    <span className="text-sm font-mono text-slate-500 uppercase tracking-widest">02. Case File Codex</span>
+                    <div className="h-px flex-1 bg-slate-800"></div>
                 </div>
+                
+                {selectedEntry ? (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <CaseFileCodex entry={selectedEntry} />
+                    </div>
+                ) : (
+                    <div className="text-center py-20 border border-dashed border-slate-800 rounded-lg">
+                        <p className="text-slate-500 font-mono">Select a module from the matrix above to view the Case File.</p>
+                    </div>
+                )}
+            </div>
 
-                <div className="pt-8">
-                    <a href="https://notionpress.com/in/read/the-order-of-chaos" target="_blank" rel="noreferrer">
-                        <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-8 py-6 text-lg font-medium rounded-none">
-                            Acquire the Manual <ShoppingCart className="ml-2 h-5 w-5" />
+            {/* 3. Idea Clinic */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center border-t border-slate-900 pt-24">
+                <div className="space-y-8">
+                    <div className="space-y-4">
+                        <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">03. The Idea Clinic</span>
+                        <h2 className="text-4xl font-serif font-bold text-slate-100">The Other 20%</h2>
+                        <p className="text-lg text-slate-400 font-light leading-relaxed">
+                            The Codex covers the 80% of predictable scaling challenges. For the novel issues—the "other 20%"—we dissect them in the Idea Clinic.
+                        </p>
+                        <p className="text-slate-400 font-light">
+                            Join the community discussion or use the interface to analyze your unique constraints.
+                        </p>
+                    </div>
+                    <a href="https://www.linkedin.com/groups/15130009/" target="_blank" rel="noreferrer">
+                        <Button variant="outline" className="border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-slate-950">
+                            Join the Idea Clinic on LinkedIn
                         </Button>
                     </a>
+                </div>
+                
+                <div className="relative">
+                    <div className="absolute -inset-4 bg-amber-500/5 rounded-xl blur-2xl"></div>
+                    <IdeaClinic />
                 </div>
             </div>
         </div>
