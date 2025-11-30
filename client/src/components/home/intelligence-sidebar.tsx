@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BLOG_POSTS } from "@/lib/data";
 // Import logo using alias
 import logoUrl from "@assets/hkborah-logo.png";
+import bookCoverUrl from "@assets/book-cover-order-of-chaos.png";
 
 export function IntelligenceSidebar() {
   return (
@@ -71,11 +72,27 @@ export function IntelligenceSidebar() {
 
         {/* Manual Link */}
         <div className="mt-8 pt-8 border-t border-slate-900">
-          <h4 className="font-serif text-lg text-slate-300 mb-1">The Order of Chaos</h4>
-          <span className="text-[10px] font-mono text-slate-500 uppercase block mb-2">Founder's Blueprint</span>
-          <a href="https://notionpress.com/in/read/the-order-of-chaos" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-mono text-amber-500 hover:text-amber-400 cursor-pointer group">
-            <span>ACQUIRE THE MANUAL</span>
-            <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+          <a href="https://notionpress.com/in/read/the-order-of-chaos" target="_blank" rel="noreferrer" className="group cursor-pointer block">
+            <div className="grid grid-cols-[1fr_120px] gap-4 items-start">
+              {/* Text Section */}
+              <div>
+                <h4 className="font-serif text-lg text-slate-300 mb-1 group-hover:text-amber-500 transition-colors">The Order of Chaos</h4>
+                <span className="text-[10px] font-mono text-slate-500 uppercase block mb-3">Founder's Blueprint</span>
+                <div className="flex items-center gap-2 text-xs font-mono text-amber-500 group-hover:text-amber-400 transition-colors">
+                  <span>ACQUIRE THE MANUAL</span>
+                  <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+              
+              {/* Book Cover Thumbnail */}
+              <div className="w-full h-auto">
+                <img 
+                  src={bookCoverUrl}
+                  alt="The Order of Chaos"
+                  className="w-full h-auto rounded border border-amber-500/30 shadow-lg shadow-amber-900/20 group-hover:shadow-amber-900/40 group-hover:border-amber-500/60 transition-all"
+                />
+              </div>
+            </div>
           </a>
         </div>
       </div>
