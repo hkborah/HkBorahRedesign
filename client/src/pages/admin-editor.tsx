@@ -108,49 +108,67 @@ export default function AdminEditor() {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
     
-    if (text) {
-      // Create a temporary container to parse the pasted HTML
+    // Get HTML first, then fall back to plain text
+    let html = e.clipboardData.getData('text/html');
+    const plainText = e.clipboardData.getData('text/plain');
+    
+    if (html) {
+      // Parse HTML and clean it
       const temp = document.createElement('div');
-      temp.innerHTML = text;
+      temp.innerHTML = html;
       
-      // Sanitize: keep only safe tags and remove all attributes
-      const sanitize = (node: Node): Node => {
-        if (node.nodeType === 3) return node; // Text node
-        if (node.nodeType !== 1) return node; // Not element
-        
-        const el = node as Element;
-        const tagName = el.tagName.toLowerCase();
-        
-        // Allowed tags
-        const allowedTags = ['p', 'br', 'b', 'i', 'u', 'strong', 'em', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'blockquote'];
-        
-        if (!allowedTags.includes(tagName)) {
-          // For disallowed tags, keep children but not the tag
-          const fragment = document.createDocumentFragment();
-          Array.from(el.childNodes).forEach(child => {
-            fragment.appendChild(sanitize(child.cloneNode(true)));
-          });
-          return fragment;
+      // Extract clean text and structure
+      const paragraphs: string[] = [];
+      
+      const traverse = (node: Node) => {
+        if (node.nodeType === 3) {
+          // Text node
+          const text = node.textContent?.trim();
+          if (text) {
+            paragraphs.push(text);
+          }
+        } else if (node.nodeType === 1) {
+          const el = node as Element;
+          const tag = el.tagName.toLowerCase();
+          
+          // Handle block elements
+          if (['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'blockquote'].includes(tag)) {
+            const text = el.textContent?.trim();
+            if (text) {
+              if (tag.startsWith('h')) {
+                paragraphs.push(`<${tag}>${text}</${tag}>`);
+              } else if (tag === 'li') {
+                paragraphs.push(`<li>${text}</li>`);
+              } else {
+                paragraphs.push(`<p>${text}</p>`);
+              }
+            }
+          } else {
+            // For other elements, traverse children
+            Array.from(node.childNodes).forEach(child => traverse(child));
+          }
         }
-        
-        // Create clean element without attributes
-        const clean = document.createElement(tagName);
-        Array.from(el.childNodes).forEach(child => {
-          clean.appendChild(sanitize(child.cloneNode(true)));
-        });
-        return clean;
       };
       
-      const sanitized = sanitize(temp);
+      traverse(temp);
+      html = paragraphs.join('');
+    }
+    
+    const finalContent = html || plainText;
+    
+    if (finalContent) {
+      const selection = window.getSelection();
+      if (!selection?.rangeCount) return;
       
-      // Insert sanitized content
-      const range = window.getSelection()?.getRangeAt(0);
-      if (range) {
-        range.deleteContents();
-        range.insertNode(sanitized);
-        range.collapse(false);
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      
+      const temp = document.createElement('div');
+      temp.innerHTML = finalContent;
+      
+      while (temp.firstChild) {
+        range.insertNode(temp.firstChild);
       }
       
       if (contentRef.current) {
