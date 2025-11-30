@@ -1298,29 +1298,29 @@ export interface BlogPost {
 export const BLOG_POSTS: BlogPost[] = [
     {
         id: "1",
-        title: "The Architecture of Scaling",
-        excerpt: "Understanding how organizations evolve from startup chaos to enterprise discipline through systematic architectural thinking.",
-        content: "Full content here",
+        title: "Architecting an IPO-Ready Conglomerate",
+        excerpt: "As an investor and advisor, I detail how the Architectural Scaling Framework was deployed to transform a chaotic, multi-vertical company into a disciplined, IPO-ready enterprise.",
+        content: "A Longitudinal Case Study by H.K. Borah, Investor & Advisor\n\n# Case Study: Architecting a Vertically Integrated Growth Engine\n\nHow the Architectural Scaling Framework was deployed to transform a chaotic, multi-vertical company into a disciplined, IPO-ready enterprise.\n\n## I. Introduction: The Crisis of Unexamined Architecture in a Portfolio Company\n\nAs an investor and advisor, I frequently encounter ventures that, despite outward appearances of success, harbor deep-seated architectural flaws. One such company, a significant entity within my portfolio, exemplified this paradox. Originating as a focused player in meat distribution, it had, through strategic vertical integration and adept leveraging of local opportunities, organically grown into a diversified conglomerate spanning food, health, and life sciences. With an IPO firmly on the horizon, its trajectory was lauded as a testament to ambitious, multi-faceted growth.\n\nHowever, beneath this compelling pre-IPO narrative, the organization grappled with escalating architectural stress. Each new vertical, while strategically sound, incrementally amplified operational complexity and chaos. Processes optimized for one business unit proved disastrously inefficient or non-compliant in another. Data remained stubbornly siloed, offering fragmented and often contradictory insights into the enterprise's true health. The executive team, once agile innovators, found their strategic bandwidth consumed by reactive problem-solving—a direct consequence of an unintegrated and overly complex internal machine.\n\n> This was not a failure of vision or execution, but a profound architectural breakdown. The company functioned as a collection of high-potential assets, yet lacked a cohesive, integrated operating system.\n\nFrom my vantage point as an investor, it became clear that a fundamental re-architecture was not merely a recommendation; it was an existential imperative to navigate the rigorous demands and scrutiny of the public markets.",
         date: "Nov 15, 2024",
-        slug: "architecture-of-scaling",
-        image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop"
+        slug: "architecting-ipo-conglomerate",
+        image: "@assets/generated_images/blueprint_architecture_framework_design.png"
     },
     {
         id: "2",
-        title: "Founder Operating Systems",
-        excerpt: "How to build governance protocols that keep co-founder relationships thriving while making critical business decisions.",
-        content: "Full content here",
+        title: "The Six Sigma Secret to Startup Scaling",
+        excerpt: "How a system from manufacturing can build you a flawless, repeatable growth engine by engineering chaos out of your operations.",
+        content: "A Cross-Disciplinary Thesis\n\n# The Six Sigma Secret to Startup Scaling\n\nHow a system from manufacturing can build you a flawless, repeatable growth engine by engineering chaos out of your operations.\n\n## I. Introduction: The Cult of Chaos\n\nIn the modern startup ecosystem, we have built a cult around chaos. We glorify the \"hustle,\" the all-night coding sessions, the frantic pivots, and the \"move fast and break things\" mantra. We treat the inherent messiness of company building not as a problem to be solved, but as a badge of honor—a sign that we are truly committed to the entrepreneurial struggle.\n\n> This is a dangerous and architecturally unsound delusion.\n\nAfter years of operating in both disciplined, large-scale corporate environments and the chaotic trenches of high-growth startups, I have come to a firm conclusion: chaos is a design flaw, not a feature. It is a symptom of an unexamined, undisciplined process, and it is the single greatest threat to a startup's survival. The unspoken truth is that the most powerful system for startup scaling comes not from the latest Silicon Valley trend, but from the rigorous, battle-tested world of manufacturing engineering.\n\nThe secret to building an enduring company is to stop acting like a frantic artist and start thinking like a disciplined architect. The secret is Six Sigma.\n\n## II. Deconstructing Six Sigma: A First-Principles Approach for Founders\n\nFor most founders, \"Six Sigma\" is an intimidating piece of corporate jargon associated with factory floors and complex statistical charts. This is a misunderstanding of its core essence. At its heart, Six Sigma is a simple, powerful philosophy: it is a system for identifying and eliminating variation and defects in any process.",
         date: "Nov 8, 2024",
-        slug: "founder-operating-systems",
-        image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop"
+        slug: "six-sigma-scaling",
+        image: "@assets/generated_images/six_sigma_manufacturing_process_flow.png"
     },
     {
         id: "3",
-        title: "The MVP Blueprint",
-        excerpt: "A framework for building the absolute minimum product that tests your core hypothesis without wasting engineering resources.",
-        content: "Full content here",
+        title: "Your First Board Meeting Is Not a Report",
+        excerpt: "Why the traditional board meeting is an architectural flaw, and how to transform it into your most valuable strategic asset.",
+        content: "A Contrarian Manifesto\n\n# Your First Board Meeting Is Not a Report\n\nBy HK Borah\n\nPublished: 21 January, 2025\n\n## I. Introduction: The Unexamined Architectural Flaw in Startup Governance\n\nFor a first-time founder, the inaugural board meeting looms large. It is seen as a rite of passage, a performance, a high-stakes presentation where you must prove your worth to the investors who have just placed a bet on your vision. The conventional wisdom is to prepare an exhaustive deck, practice your pitch, and spend the ninety minutes reporting on past performance.\n\n> This is a catastrophic, unexamined assumption.\n\nThe traditional, report-centric board meeting is one of the most significant architectural flaws in modern startup governance. It is a system designed for information transfer, not for strategic deliberation. It is a relic of a corporate era that actively impedes the speed and agility required for early-stage success. A meeting spent telling your board what has already happened is a meeting that has failed before it even began.\n\nThis article presents a contrarian thesis: your board meeting is not a performance review; it is your most valuable, and underutilized, strategic asset. To unlock its potential, you must re-architect it from first principles. You must flip the model.\n\n## II. Deconstructing the Problem: The Inefficiencies of the Status Quo\n\nThe failure of the traditional board meeting is not a matter of bad intentions, but of flawed design. The architecture itself is inefficient, leading to predictable and damaging outcomes.",
         date: "Nov 1, 2024",
-        slug: "mvp-blueprint",
-        image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop"
+        slug: "first-board-meeting",
+        image: "@assets/generated_images/strategic_board_meeting_collaboration.png"
     }
 ];
