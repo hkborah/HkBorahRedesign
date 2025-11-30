@@ -230,6 +230,15 @@ export const CODEX_ENTRIES: CodexEntry[] = [
                 ]
             }
         ]
+    },
+    {
+        id: "blueprint-data",
+        stage: "Blueprint",
+        domain: "Data & Metrics",
+        title: "Blueprint Stage - Data & Metrics",
+        description: "Measuring what matters in pre-product/market fit",
+        coreObjective: "Coming soon - Foundational metrics and measurement systems for the Blueprint Stage.",
+        sections: []
     }
 ];
 
