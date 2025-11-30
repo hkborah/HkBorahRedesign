@@ -31,35 +31,84 @@ export function CaseFileCodex({ entry }: CaseFileCodexProps) {
         </p>
       </div>
 
+      {entry.coreObjective && (
+        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-6">
+          <h3 className="text-sm font-mono text-amber-500 uppercase tracking-widest mb-3">Core Objective</h3>
+          <p className="text-slate-300 font-light leading-relaxed whitespace-pre-line">
+            {entry.coreObjective}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-6">
         <h3 className="text-sm font-mono text-slate-500 uppercase tracking-widest flex items-center gap-2">
           <Book className="h-4 w-4" />
           Operational Protocols
         </h3>
 
-        <Accordion type="single" collapsible className="w-full space-y-4">
-          {entry.questions.map((q, idx) => (
-            <AccordionItem key={idx} value={`item-${idx}`} className="border border-slate-800 rounded-lg bg-slate-950/50 px-4">
-              <AccordionTrigger className="text-left text-slate-200 hover:text-amber-500 transition-colors py-4 font-medium leading-snug">
-                <span className="mr-4 text-amber-500/50 font-mono text-xs">0{idx + 1}</span>
-                {q.q}
-              </AccordionTrigger>
-              <AccordionContent className="pt-2 pb-6 space-y-6 text-slate-300 font-light">
-                <div className="whitespace-pre-line pl-8 border-l border-slate-800">
-                  {q.a}
+        {entry.sections ? (
+          <div className="space-y-8">
+            {entry.sections.map((section, sectionIdx) => (
+              <div key={section.id} className="space-y-4">
+                <div className="border-l-2 border-amber-500/30 pl-4">
+                  <h4 className="text-lg font-serif text-slate-100 mb-1">{section.title}</h4>
+                  <p className="text-slate-400 text-sm">{section.description}</p>
                 </div>
                 
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded p-4 flex gap-3 items-start">
-                  <CheckCircle2 className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-amber-500 text-xs font-mono uppercase block mb-1">The Principle</span>
-                    <p className="text-slate-200 text-sm italic">"{q.principle}"</p>
+                <Accordion type="single" collapsible className="w-full space-y-4">
+                  {(section.questions || []).map((q, qIdx) => {
+                    const globalIdx = entry.sections!.slice(0, sectionIdx).reduce((sum, s) => sum + (s.questions?.length || 0), 0) + qIdx + 1;
+                    return (
+                      <AccordionItem key={qIdx} value={`item-${sectionIdx}-${qIdx}`} className="border border-slate-800 rounded-lg bg-slate-950/50 px-4">
+                        <AccordionTrigger className="text-left text-slate-200 hover:text-amber-500 transition-colors py-4 font-medium leading-snug">
+                          <span className="mr-4 text-amber-500/50 font-mono text-xs">{String(globalIdx).padStart(2, '0')}</span>
+                          {q.q}
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-2 pb-6 space-y-6 text-slate-300 font-light">
+                          <div className="whitespace-pre-line pl-8 border-l border-slate-800">
+                            {q.a}
+                          </div>
+                          
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded p-4 flex gap-3 items-start">
+                            <CheckCircle2 className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <span className="text-amber-500 text-xs font-mono uppercase block mb-1">The Principle</span>
+                              <p className="text-slate-200 text-sm italic">"{q.principle}"</p>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              </div>
+            ))}
+          </div>
+        ) : entry.questions ? (
+          <Accordion type="single" collapsible className="w-full space-y-4">
+            {entry.questions.map((q, idx) => (
+              <AccordionItem key={idx} value={`item-${idx}`} className="border border-slate-800 rounded-lg bg-slate-950/50 px-4">
+                <AccordionTrigger className="text-left text-slate-200 hover:text-amber-500 transition-colors py-4 font-medium leading-snug">
+                  <span className="mr-4 text-amber-500/50 font-mono text-xs">0{idx + 1}</span>
+                  {q.q}
+                </AccordionTrigger>
+                <AccordionContent className="pt-2 pb-6 space-y-6 text-slate-300 font-light">
+                  <div className="whitespace-pre-line pl-8 border-l border-slate-800">
+                    {q.a}
                   </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                  
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded p-4 flex gap-3 items-start">
+                    <CheckCircle2 className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-amber-500 text-xs font-mono uppercase block mb-1">The Principle</span>
+                      <p className="text-slate-200 text-sm italic">"{q.principle}"</p>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : null}
       </div>
     </div>
   );
