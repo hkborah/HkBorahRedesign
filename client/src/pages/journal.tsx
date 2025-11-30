@@ -4,11 +4,24 @@ import { ArrowLeft, ArrowRight, Calendar, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { BLOG_POSTS } from "@/lib/data";
 import logoUrl from "@assets/hkborah-logo.png";
+import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
+import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
+import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";
 import { motion } from "framer-motion";
+
+const imageMap: { [key: string]: string } = {
+  "1": blueprintImg,
+  "2": sixSigmaImg,
+  "3": boardMeetingImg,
+};
 
 export default function Journal() {
   const featuredPost = BLOG_POSTS?.[0];
   const remainingPosts = BLOG_POSTS?.slice(1) || [];
+  
+  const getImage = (postId: string) => {
+    return imageMap[postId] || "";
+  };
 
   if (!featuredPost) {
     return (
@@ -61,7 +74,7 @@ export default function Journal() {
                           <div className="h-64 lg:h-auto overflow-hidden relative">
                               <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition-colors z-10"></div>
                               <img 
-                                  src={featuredPost.image} 
+                                  src={getImage(featuredPost.id)} 
                                   alt={featuredPost.title} 
                                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                               />
@@ -102,7 +115,7 @@ export default function Journal() {
                                 <div className="aspect-video overflow-hidden relative bg-slate-900">
                                     <div className="absolute inset-0 bg-slate-950/10 group-hover:bg-transparent transition-colors z-10"></div>
                                     <img 
-                                        src={post.image} 
+                                        src={getImage(post.id)} 
                                         alt={post.title} 
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                                     />
