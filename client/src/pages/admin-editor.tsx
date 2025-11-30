@@ -109,71 +109,34 @@ export default function AdminEditor() {
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     
-    // Get HTML first, then fall back to plain text
-    let html = e.clipboardData.getData('text/html');
+    // Always use plain text to avoid all the HTML/CSS mess from web sources
     const plainText = e.clipboardData.getData('text/plain');
     
-    if (html) {
-      // Parse HTML and clean it
-      const temp = document.createElement('div');
-      temp.innerHTML = html;
-      
-      // Extract clean text and structure
-      const paragraphs: string[] = [];
-      
-      const traverse = (node: Node) => {
-        if (node.nodeType === 3) {
-          // Text node
-          const text = node.textContent?.trim();
-          if (text) {
-            paragraphs.push(text);
-          }
-        } else if (node.nodeType === 1) {
-          const el = node as Element;
-          const tag = el.tagName.toLowerCase();
-          
-          // Handle block elements
-          if (['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'blockquote'].includes(tag)) {
-            const text = el.textContent?.trim();
-            if (text) {
-              if (tag.startsWith('h')) {
-                paragraphs.push(`<${tag}>${text}</${tag}>`);
-              } else if (tag === 'li') {
-                paragraphs.push(`<li>${text}</li>`);
-              } else {
-                paragraphs.push(`<p>${text}</p>`);
-              }
-            }
-          } else {
-            // For other elements, traverse children
-            Array.from(node.childNodes).forEach(child => traverse(child));
-          }
-        }
-      };
-      
-      traverse(temp);
-      html = paragraphs.join('');
+    if (!plainText) return;
+    
+    // Split by double newlines or multiple line breaks to create paragraphs
+    const lines = plainText.split(/\n\n+/);
+    const htmlContent = lines
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => `<p>${line.replace(/\n/g, '<br>')}</p>`)
+      .join('');
+    
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    
+    const temp = document.createElement('div');
+    temp.innerHTML = htmlContent;
+    
+    while (temp.firstChild) {
+      range.insertNode(temp.firstChild);
     }
     
-    const finalContent = html || plainText;
-    
-    if (finalContent) {
-      const selection = window.getSelection();
-      if (!selection?.rangeCount) return;
-      
-      const range = selection.getRangeAt(0);
-      range.deleteContents();
-      
-      const temp = document.createElement('div');
-      temp.innerHTML = finalContent;
-      
-      while (temp.firstChild) {
-        range.insertNode(temp.firstChild);
-      }
-      
-      if (contentRef.current) {
-        setContent(contentRef.current.innerHTML);
-      }
+    if (contentRef.current) {
+      setContent(contentRef.current.innerHTML);
     }
   };
 
