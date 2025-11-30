@@ -1293,6 +1293,7 @@ export interface BlogPost {
     date: string;
     slug: string;
     image: string;
+    category?: string;
 }
 
 export const BLOG_POSTS: BlogPost[] = [
