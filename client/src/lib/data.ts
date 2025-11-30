@@ -55,7 +55,7 @@ export const CHAT_INITIAL_MESSAGES = [
   },
   {
     role: "assistant",
-    content: "Where is the friction in your business today?"
+    content: "How can I help you today?"
   }
 ];
 
