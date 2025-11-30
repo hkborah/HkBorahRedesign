@@ -9,6 +9,28 @@ import logoUrl from "@assets/hkborah-logo.png";
 import bookCoverUrl from "@assets/book-cover-order-of-chaos.png";
 
 export function IntelligenceSidebar() {
+  const [posts, setPosts] = React.useState<typeof BLOG_POSTS>([]);
+
+  React.useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/blog/posts");
+        if (response.ok) {
+          const data = await response.json();
+          setPosts(data && data.length > 0 ? data : BLOG_POSTS);
+        } else {
+          setPosts(BLOG_POSTS);
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setPosts(BLOG_POSTS);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  const displayPosts = posts.length > 0 ? posts : BLOG_POSTS;
+
   return (
     <div className="h-full flex flex-col justify-between p-8 sm:p-12 relative border-r border-slate-900/50">
       {/* Branding Section */}
@@ -37,7 +59,7 @@ export function IntelligenceSidebar() {
 
         <ScrollArea className="h-[300px] w-full pr-4">
           <div className="space-y-6">
-            {BLOG_POSTS.map((post, index) => (
+            {displayPosts.map((post, index) => (
               <motion.div 
                 key={post.id}
                 initial={{ opacity: 0, y: 20 }}
