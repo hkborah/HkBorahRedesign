@@ -42,7 +42,7 @@ export default function Framework() {
 
             {/* ASF Introduction */}
             <div className="space-y-12">
-                <div className="text-center space-y-6 max-w-4xl mx-auto">
+                <div className="space-y-6">
                     <h2 className="text-4xl font-serif font-bold text-slate-100">The Architectural Scaling Framework</h2>
                     <div className="space-y-4 text-lg text-slate-400 font-light leading-relaxed">
                         <p>
@@ -62,42 +62,40 @@ export default function Framework() {
 
                 {/* ASF Process Diagram */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12">
-                    <div className="grid grid-cols-3 gap-8 mb-12">
+                    <div className="flex gap-6 items-flex-start relative">
                         {/* Step 01 */}
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-full bg-gradient-to-br from-amber-600 to-amber-700 rounded-lg p-8 mb-6 relative">
-                                <div className="text-4xl mb-4">⚙️</div>
-                                <h3 className="text-xl font-serif font-bold text-white mb-3">Scaling Diagnostic Matrix</h3>
+                        <div className="flex-1 flex flex-col items-center">
+                            <div className="w-full bg-gradient-to-br from-amber-600 to-amber-700 rounded-lg p-8 mb-8 h-48 flex flex-col items-center justify-center text-center">
+                                <div className="text-5xl mb-4">⚙️</div>
+                                <h3 className="text-lg font-serif font-bold text-white mb-2">Scaling Diagnostic Matrix</h3>
                                 <p className="text-sm text-amber-100">Identify Stage of Growth and Point of Pain</p>
                             </div>
-                            <p className="text-xs font-mono text-amber-500 font-semibold mb-6">STEP 01</p>
+                            <p className="text-xs font-mono text-amber-500 font-semibold">STEP 01</p>
                         </div>
 
                         {/* Step 02 */}
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg p-8 mb-6 relative">
-                                <div className="text-4xl mb-4">📖</div>
-                                <h3 className="text-xl font-serif font-bold text-white mb-3">Case File Codex</h3>
+                        <div className="flex-1 flex flex-col items-center">
+                            <div className="w-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg p-8 mb-8 h-48 flex flex-col items-center justify-center text-center">
+                                <div className="text-5xl mb-4">📖</div>
+                                <h3 className="text-lg font-serif font-bold text-white mb-2">Case File Codex</h3>
                                 <p className="text-sm text-slate-300">Locate solutions to 80% of problems faced by founders</p>
                             </div>
-                            <p className="text-xs font-mono text-slate-400 font-semibold mb-6">STEP 02</p>
+                            <p className="text-xs font-mono text-slate-400 font-semibold">STEP 02</p>
                         </div>
 
                         {/* Step 03 */}
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-full bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-lg p-8 mb-6 relative">
-                                <div className="text-4xl mb-4">💬</div>
-                                <h3 className="text-xl font-serif font-bold text-white mb-3">Idea Clinic</h3>
+                        <div className="flex-1 flex flex-col items-center">
+                            <div className="w-full bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-lg p-8 mb-8 h-48 flex flex-col items-center justify-center text-center">
+                                <div className="text-5xl mb-4">💬</div>
+                                <h3 className="text-lg font-serif font-bold text-white mb-2">Idea Clinic</h3>
                                 <p className="text-sm text-emerald-100">Discuss solutions to 20% of unique problems</p>
                             </div>
-                            <p className="text-xs font-mono text-emerald-400 font-semibold mb-6">STEP 03</p>
+                            <p className="text-xs font-mono text-emerald-400 font-semibold">STEP 03</p>
                         </div>
                     </div>
 
-                    {/* Timeline */}
-                    <div className="flex items-center justify-between px-4">
-                        <div className="flex-1 h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500 rounded-full"></div>
-                    </div>
+                    {/* Continuous Flow Line */}
+                    <div className="mt-8 h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500 rounded-full"></div>
                 </div>
             </div>
 
