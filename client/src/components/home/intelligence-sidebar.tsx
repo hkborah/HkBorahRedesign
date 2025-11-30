@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BLOG_POSTS } from "@/lib/data";
 // Import logo using alias
-import logoUrl from "@assets/HKBorah Logo 350x100_1764501759080.png";
+import logoUrl from "@assets/hkborah-logo.png";
 
 export function IntelligenceSidebar() {
   return (
