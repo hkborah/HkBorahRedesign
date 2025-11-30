@@ -104,14 +104,24 @@ export function IdeaClinic() {
 
           if (response.ok) {
               // Save to Google Drive via external API
-              const driveResponse = await fetch(SAVE_API, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ history: messages })
-              });
-              
-              if (!driveResponse.ok) {
-                  console.warn("Google Drive save returned status:", driveResponse.status);
+              try {
+                  const driveResponse = await fetch(SAVE_API, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ history: messages })
+                  });
+                  
+                  const driveData = await driveResponse.text();
+                  console.log("Google Drive response status:", driveResponse.status);
+                  console.log("Google Drive response body:", driveData);
+                  
+                  if (!driveResponse.ok) {
+                      console.error("Google Drive save failed. Status:", driveResponse.status, "Response:", driveData);
+                  } else {
+                      console.log("Google Drive save succeeded!");
+                  }
+              } catch (driveErr) {
+                  console.error("Google Drive API error:", driveErr);
               }
           }
 
