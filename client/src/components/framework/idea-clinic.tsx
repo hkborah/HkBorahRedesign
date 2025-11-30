@@ -128,12 +128,28 @@ export function IdeaClinic() {
             <Sparkles className="h-4 w-4 text-amber-500" />
             <span className="font-serif font-bold text-slate-200">Idea Clinic</span>
          </div>
-         <div className="flex items-center gap-4">
+         <div className="flex items-center gap-3">
              <a href="https://www.linkedin.com/groups/15130009/" target="_blank" rel="noreferrer" className="text-[10px] font-mono text-slate-500 hover:text-amber-500 uppercase tracking-widest hidden sm:block">
                 Join Community →
              </a>
-             <Button variant="ghost" size="icon" onClick={handleSaveChat} disabled={isSaving} className="text-slate-400 hover:text-amber-500 h-8 w-8">
-                 {isSaving ? <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div> : <Save className="h-4 w-4" />}
+             <Button 
+               variant="outline" 
+               size="sm"
+               onClick={handleSaveChat} 
+               disabled={isSaving} 
+               className="text-slate-300 border-slate-700 hover:bg-amber-500/10 hover:border-amber-500 hover:text-amber-500 text-xs gap-2"
+             >
+                 {isSaving ? (
+                   <>
+                     <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                     Saving...
+                   </>
+                 ) : (
+                   <>
+                     <Save className="h-3 w-3" />
+                     <span className="hidden sm:inline">Save Transcript</span>
+                   </>
+                 )}
              </Button>
          </div>
       </div>

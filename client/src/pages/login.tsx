@@ -9,12 +9,19 @@ import logoUrl from "@assets/hkborah-logo.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 
+const VALID_CREDENTIALS = {
+  email: "hkborah@gmail.com",
+  password: "ScalingFramework2024"
+};
+
 export default function Login() {
   const [, params] = useRoute("/login/:type");
   const type = (params?.type as 'architect' | 'editor') || "editor";
   const title = type === "architect" ? "Business Architect Login" : "Editor Login";
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const { login } = useAuth();
   const [, navigate] = useLocation();
 
@@ -22,16 +29,23 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login
+    // Validate credentials
     setTimeout(() => {
       setIsLoading(false);
-      // Both logins now work - architect and editor
-      login(type);
-      toast({
-          title: "Access Granted",
-          description: `Welcome to the ${type === "editor" ? "Editor" : "Architect"} Interface...`,
-      });
-      navigate("/admin/journal");
+      if (email === VALID_CREDENTIALS.email && password === VALID_CREDENTIALS.password) {
+        login(type);
+        toast({
+            title: "Access Granted",
+            description: `Welcome to the ${type === "editor" ? "Editor" : "Architect"} Interface...`,
+        });
+        navigate("/admin/journal");
+      } else {
+        toast({
+            title: "Access Denied",
+            description: "Invalid email or password.",
+            variant: "destructive"
+        });
+      }
     }, 1500);
   };
 
@@ -57,11 +71,32 @@ export default function Login() {
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-slate-400">Identity</Label>
-                        <Input id="email" type="email" placeholder="hkborah@gmail.com" className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" required />
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          placeholder="hkborah@gmail.com" 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
+                          required 
+                        />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="password" className="text-slate-400">Passcode</Label>
-                        <Input id="password" type="password" className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" required />
+                        <Input 
+                          id="password" 
+                          type="password" 
+                          placeholder="Enter passcode"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
+                          required 
+                        />
+                    </div>
+                    <div className="bg-slate-950/50 border border-slate-800 rounded p-3 text-xs font-mono text-slate-400">
+                        <p className="mb-1">Demo Credentials:</p>
+                        <p>Email: hkborah@gmail.com</p>
+                        <p>Password: ScalingFramework2024</p>
                     </div>
                     <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-medium" disabled={isLoading}>
                         {isLoading ? (
