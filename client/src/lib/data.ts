@@ -223,3 +223,14 @@ export const CODEX_ENTRIES: CodexEntry[] = [
         ]
     }
 ];
+
+export interface BlogPost {
+    id: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    date: string;
+    slug: string;
+}
+
+export const BLOG_POSTS: BlogPost[] = [];
