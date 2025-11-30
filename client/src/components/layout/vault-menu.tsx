@@ -20,7 +20,7 @@ export function VaultMenu({ isOpen, onClose }: VaultMenuProps) {
   };
 
   const links = [
-    { name: "AI Interface", path: "/", label: "AI Interface" },
+    { name: "Idea Clinic", path: "https://www.linkedin.com/groups/15130009/", label: "Idea Clinic (LinkedIn)", external: true },
     { name: "Architectural Scaling Framework", path: "/framework", label: "The Codex (Book)" },
     { name: "HK's Journal", path: "/journal", label: "The Journal (Blog)" },
     { name: "About HK Borah", path: "/about", label: "About HK Borah" },
@@ -60,18 +60,29 @@ export function VaultMenu({ isOpen, onClose }: VaultMenuProps) {
                 <div className="space-y-6">
                   <h3 className="text-xs font-mono text-slate-500 uppercase tracking-widest">Public Access</h3>
                   <nav className="flex flex-col space-y-4">
-                    {links.map((link) => (
-                      <Link key={link.path} href={link.path}>
-                        <div 
-                          className={`text-2xl font-serif cursor-pointer transition-colors duration-300 hover:text-amber-500 ${
-                            location === link.path ? "text-amber-500 border-l-2 border-amber-500 pl-4" : "text-slate-200"
-                          }`}
-                          onClick={onClose}
-                        >
-                          {link.name}
-                        </div>
-                      </Link>
-                    ))}
+                    {links.map((link) => 
+                      link.external ? (
+                        <a key={link.path} href={link.path} target="_blank" rel="noreferrer">
+                          <div 
+                            className="text-2xl font-serif cursor-pointer transition-colors duration-300 hover:text-amber-500 text-slate-200"
+                            onClick={onClose}
+                          >
+                            {link.name}
+                          </div>
+                        </a>
+                      ) : (
+                        <Link key={link.path} href={link.path}>
+                          <div 
+                            className={`text-2xl font-serif cursor-pointer transition-colors duration-300 hover:text-amber-500 ${
+                              location === link.path ? "text-amber-500 border-l-2 border-amber-500 pl-4" : "text-slate-200"
+                            }`}
+                            onClick={onClose}
+                          >
+                            {link.name}
+                          </div>
+                        </Link>
+                      )
+                    )}
                   </nav>
                 </div>
 

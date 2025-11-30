@@ -69,29 +69,37 @@ export default function Framework() {
                 )}
             </div>
 
-            {/* 3. Idea Clinic */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center border-t border-slate-900 pt-24">
-                <div className="space-y-8">
-                    <div className="space-y-4">
-                        <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">03. The Idea Clinic</span>
-                        <h2 className="text-4xl font-serif font-bold text-slate-100">The Other 20%</h2>
-                        <p className="text-lg text-slate-400 font-light leading-relaxed">
-                            The Codex covers the 80% of predictable scaling challenges. For the novel issues—the "other 20%"—we dissect them in the Idea Clinic.
+            {/* 3. The Structure of the Codex */}
+            <div className="space-y-8 border-t border-slate-900 pt-24">
+                <div className="space-y-4">
+                    <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">03. The Structure of the Codex: Cornerstone Problems</span>
+                    <h2 className="text-4xl font-serif font-bold text-slate-100 mb-6">The Architecture Behind the Architecture</h2>
+                    
+                    <div className="space-y-6 text-lg text-slate-400 font-light leading-relaxed max-w-3xl">
+                        <p>
+                            The universe of startup challenges is vast, but the foundational problems are finite and predictable. This Codex is not an exhaustive encyclopedia of every possible issue. It is a curated library of the <span className="text-amber-300 font-medium">cornerstone challenges</span>—the few, critical, high-leverage problems that, when solved correctly, unlock the majority of progress at each stage.
                         </p>
-                        <p className="text-slate-400 font-light">
-                            Join the community discussion or use the interface to analyze your unique constraints.
+                        <p>
+                            Each section above focuses on these core architectural issues, allowing you to avoid distraction and apply your limited resources to the work that truly matters. The full, detailed blueprints are in the book.
                         </p>
                     </div>
-                    <a href="https://www.linkedin.com/groups/15130009/" target="_blank" rel="noreferrer">
-                        <Button variant="outline" className="border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-slate-950">
-                            Join the Idea Clinic on LinkedIn
-                        </Button>
-                    </a>
                 </div>
                 
-                <div className="relative">
-                    <div className="absolute -inset-4 bg-amber-500/5 rounded-xl blur-2xl"></div>
-                    <IdeaClinic />
+                <div className="pt-6 border-t border-slate-800">
+                    <div className="space-y-4">
+                        <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">03. The Idea Clinic</span>
+                        <h3 className="text-2xl font-serif font-bold text-slate-100">The Other 20%</h3>
+                        <p className="text-slate-400 font-light leading-relaxed max-w-2xl">
+                            The Codex covers the 80% of predictable scaling challenges. For the novel issues—the "other 20%"—we dissect them in the Idea Clinic community.
+                        </p>
+                    </div>
+                    <div className="mt-6">
+                        <a href="https://www.linkedin.com/groups/15130009/" target="_blank" rel="noreferrer">
+                            <Button variant="outline" className="border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-slate-950">
+                                Join the Idea Clinic on LinkedIn
+                            </Button>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
