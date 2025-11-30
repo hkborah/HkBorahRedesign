@@ -93,15 +93,23 @@ export function IdeaClinic() {
       }).join('\n\n');
 
       try {
-          // Save to Google Drive via external API (silent archival)
-          await fetch(SAVE_API, {
+          // Save to local backend first
+          const response = await fetch('/api/chat/save', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ history: messages })
-          }).catch(err => {
-              // Silently fail - don't block download
-              console.error("Background archival failed:", err);
+              body: JSON.stringify({ messages })
           });
+
+          if (response.ok) {
+              // Also try to save to Google Drive via external API (silent archival)
+              await fetch(SAVE_API, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ history: messages })
+              }).catch(err => {
+                  console.error("Background archival failed:", err);
+              });
+          }
 
           // Trigger Client-Side Download (always succeeds)
           const blob = new Blob([textContent], { type: 'text/plain' });
