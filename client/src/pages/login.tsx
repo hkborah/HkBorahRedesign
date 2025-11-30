@@ -4,16 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Lock } from "lucide-react";
-import { Link, useRoute } from "wouter";
+import { Link, useRoute, useLocation } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Login() {
   const [, params] = useRoute("/login/:type");
-  const type = params?.type || "architect";
+  const type = (params?.type as 'architect' | 'editor') || "editor";
   const title = type === "architect" ? "Business Architect Login" : "Editor Login";
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
+  const { login } = useAuth();
+  const [, navigate] = useLocation();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,19 +25,13 @@ export default function Login() {
     // Simulate login
     setTimeout(() => {
       setIsLoading(false);
-      if (type === "editor") {
-        toast({
-            title: "Access Granted",
-            description: "Redirecting to Editor Interface...",
-        });
-        window.location.href = "/admin/journal";
-      } else {
-        toast({
-            title: "Access Denied",
-            description: "Invalid credentials for Business Architect clearance.",
-            variant: "destructive"
-        });
-      }
+      // Both logins now work - architect and editor
+      login(type);
+      toast({
+          title: "Access Granted",
+          description: `Welcome to the ${type === "editor" ? "Editor" : "Architect"} Interface...`,
+      });
+      navigate("/admin/journal");
     }, 1500);
   };
 

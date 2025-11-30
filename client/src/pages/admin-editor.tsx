@@ -5,13 +5,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Save, Plus } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
 import { useToast } from "@/hooks/use-toast";
 import { BLOG_POSTS } from "@/lib/data";
+import { useAuth } from "@/lib/auth-context";
 
 export default function AdminEditor() {
   const { toast } = useToast();
+  const { isAuthenticated, logout } = useAuth();
+  const [, navigate] = useLocation();
+
+  // Redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login/editor");
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!isAuthenticated) {
+    return <div className="min-h-screen bg-slate-950" />;
+  }
+
   const [posts, setPosts] = React.useState(BLOG_POSTS);
   const [isEditing, setIsEditing] = React.useState(false);
   
@@ -55,11 +70,16 @@ export default function AdminEditor() {
                 <span className="text-xs font-mono text-amber-500 uppercase border border-amber-500/30 px-2 py-1 rounded bg-amber-500/10">Editor Access</span>
             </div>
             <div className="flex gap-4">
-                <Link href="/">
-                    <Button variant="ghost" className="text-slate-400 hover:text-amber-500 gap-2">
-                        Log Out
-                    </Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  className="text-slate-400 hover:text-amber-500 gap-2"
+                  onClick={() => {
+                    logout();
+                    navigate("/");
+                  }}
+                >
+                    Log Out
+                </Button>
                 <Link href="/journal">
                     <Button variant="outline" className="border-slate-800 text-slate-300 hover:bg-slate-900">
                         View Live Journal
