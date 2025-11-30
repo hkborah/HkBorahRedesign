@@ -16,8 +16,7 @@ const VALID_CREDENTIALS = {
 
 export default function Login() {
   const [, params] = useRoute("/login/:type");
-  const type = (params?.type as 'architect' | 'editor') || "editor";
-  const title = type === "architect" ? "Business Architect Login" : "Editor Login";
+  const title = "Journal Login";
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
@@ -33,10 +32,10 @@ export default function Login() {
     setTimeout(() => {
       setIsLoading(false);
       if (email === VALID_CREDENTIALS.email && password === VALID_CREDENTIALS.password) {
-        login(type);
+        login("editor");
         toast({
             title: "Access Granted",
-            description: `Welcome to the ${type === "editor" ? "Editor" : "Architect"} Interface...`,
+            description: `Welcome to the Journal Editor...`,
         });
         navigate("/admin/journal");
       } else {

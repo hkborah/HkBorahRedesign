@@ -22,7 +22,7 @@ function AppRoutes() {
       <Route path="/journal" component={Journal} />
       <Route path="/journal/:id" component={JournalPost} />
       <Route path="/about" component={About} />
-      <Route path="/login/:type" component={Login} />
+      <Route path="/login/editor" component={Login} />
       <Route path="/admin/journal" component={AdminEditor} />
       <Route component={NotFound} />
     </Switch>
