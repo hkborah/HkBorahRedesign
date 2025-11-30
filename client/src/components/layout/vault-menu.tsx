@@ -105,16 +105,10 @@ export function VaultMenu({ isOpen, onClose }: VaultMenuProps) {
                 <div className="space-y-6">
                   <h3 className="text-xs font-mono text-slate-500 uppercase tracking-widest">Secure Access</h3>
                   <div className="flex flex-col space-y-3">
-                    <Link href="/login/architect">
-                      <div className="text-slate-400 hover:text-amber-500 flex items-center gap-2 cursor-pointer transition-colors text-sm" onClick={onClose}>
-                        <Lock className="h-3 w-3" />
-                        <span>Business Architect Login (Codex)</span>
-                      </div>
-                    </Link>
                     <Link href="/login/editor">
                       <div className="text-slate-400 hover:text-amber-500 flex items-center gap-2 cursor-pointer transition-colors text-sm" onClick={onClose}>
                         <Lock className="h-3 w-3" />
-                        <span>Editor Login (Journal)</span>
+                        <span>Journal Login</span>
                       </div>
                     </Link>
                   </div>
