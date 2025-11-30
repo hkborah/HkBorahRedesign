@@ -89,22 +89,21 @@ export function IdeaClinic() {
       // Prepare text content for download
       const textContent = messages.map(msg => {
           const role = msg.role === 'user' ? 'FOUNDER' : 'HK BORAH';
-          return `[${role}]:\n${msg.content}`;
-      }).join('\n\n-------------------\n\n');
+          return `[${role}]:\n${msg.content}\n-------------------`;
+      }).join('\n\n');
 
       try {
-          // Save to backend
-          const response = await fetch('/api/chat/save', {
+          // Save to Google Drive via external API (silent archival)
+          await fetch(SAVE_API, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ messages })
+              body: JSON.stringify({ history: messages })
+          }).catch(err => {
+              // Silently fail - don't block download
+              console.error("Background archival failed:", err);
           });
 
-          if (!response.ok) throw new Error('Failed to save');
-          
-          const data = await response.json();
-
-          // Trigger Client-Side Download
+          // Trigger Client-Side Download (always succeeds)
           const blob = new Blob([textContent], { type: 'text/plain' });
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -117,10 +116,10 @@ export function IdeaClinic() {
 
           toast({
               title: "Session Saved",
-              description: "Your chat transcript has been archived and downloaded.",
+              description: "Your chat transcript has been downloaded and archived.",
           });
       } catch (error) {
-          console.error("Save error:", error);
+          console.error("Download error:", error);
           toast({
               title: "Save Failed",
               description: "Could not save your chat session. Please try again.",
