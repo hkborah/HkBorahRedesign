@@ -29,11 +29,27 @@ export default function AdminEditor() {
     return <div className="min-h-screen bg-slate-950" />;
   }
 
-  const [posts, setPosts] = React.useState(BLOG_POSTS);
+  const [posts, setPosts] = React.useState<any[]>([]);
   const [isEditing, setIsEditing] = React.useState(false);
   const [showPreview, setShowPreview] = React.useState(false);
   const [editingPostId, setEditingPostId] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+
+  // Fetch posts from database on component load
+  React.useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/blog/posts");
+        if (response.ok) {
+          const data = await response.json();
+          setPosts(data && data.length > 0 ? data : []);
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    };
+    fetchPosts();
+  }, []);
   
   // Mock form state
   const [title, setTitle] = React.useState("");

@@ -28,14 +28,14 @@ export default function Journal() {
         const response = await fetch("/api/blog/posts");
         if (response.ok) {
           const data = await response.json();
-          // Use API posts directly - they already include seeded defaults + new posts
-          setPosts(data && data.length > 0 ? data : BLOG_POSTS);
+          // Use API posts directly - no fallback to avoid duplicates
+          setPosts(data && data.length > 0 ? data : []);
         } else {
-          setPosts(BLOG_POSTS);
+          setPosts([]);
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
-        setPosts(BLOG_POSTS);
+        setPosts([]);
       } finally {
         setLoading(false);
       }
