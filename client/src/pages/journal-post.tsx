@@ -71,9 +71,7 @@ export default function JournalPost() {
 
             <div className="prose prose-invert prose-lg prose-slate max-w-none font-light">
                 <p className="lead text-xl text-slate-300">{post.excerpt}</p>
-                <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert prose-lg max-w-none">
-                    {post.content}
-                </ReactMarkdown>
+                <div dangerouslySetInnerHTML={{ __html: post.content }} className="prose prose-invert prose-lg max-w-none" />
             </div>
 
             <div className="mt-12 pt-8 border-t border-slate-900 flex justify-between items-center">

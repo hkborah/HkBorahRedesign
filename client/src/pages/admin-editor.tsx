@@ -3,15 +3,11 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Heading2, List, Trash2, Eye, Edit } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
 import { useToast } from "@/hooks/use-toast";
-import { BLOG_POSTS } from "@/lib/data";
 import { useAuth } from "@/lib/auth-context";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 export default function AdminEditor() {
   const { toast } = useToast();
