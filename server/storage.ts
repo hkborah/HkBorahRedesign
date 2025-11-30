@@ -1,5 +1,11 @@
 import { type User, type InsertUser, type ChatSession, type BlogPost, type InsertBlogPost } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { drizzle } from "drizzle-orm/neon-http";
+import * as schema from "@shared/schema";
+import { eq } from "drizzle-orm";
+
+// Initialize database connection
+const db = drizzle(process.env.DATABASE_URL!, { schema });
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -13,84 +19,76 @@ export interface IStorage {
   deleteBlogPost(id: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private chatSessions: Map<string, ChatSession>;
-  private blogPosts: Map<string, BlogPost>;
-
-  constructor() {
-    this.users = new Map();
-    this.chatSessions = new Map();
-    this.blogPosts = new Map();
-  }
-
+export class DrizzleStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await db.query.users.findFirst({
+      where: eq(schema.users.id, id),
+    });
+    return result;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const result = await db.query.users.findFirst({
+      where: eq(schema.users.username, username),
+    });
+    return result;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    const result = await db.insert(schema.users).values({
+      id,
+      ...insertUser,
+    }).returning();
+    return result[0];
   }
 
   async saveChatSession(transcript: string): Promise<ChatSession> {
     const id = randomUUID();
-    const session: ChatSession = {
+    const result = await db.insert(schema.chatSessions).values({
       id,
       transcript,
-      createdAt: new Date(),
-    };
-    this.chatSessions.set(id, session);
-    return session;
+    }).returning();
+    return result[0];
   }
 
   async getAllBlogPosts(): Promise<BlogPost[]> {
-    return Array.from(this.blogPosts.values());
+    const posts = await db.query.blogPosts.findMany();
+    return posts;
   }
 
   async getBlogPost(id: string): Promise<BlogPost | undefined> {
-    return this.blogPosts.get(id);
+    const result = await db.query.blogPosts.findFirst({
+      where: eq(schema.blogPosts.id, id),
+    });
+    return result;
   }
 
   async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
     const id = randomUUID();
-    const post: BlogPost = {
-      ...insertPost,
+    const result = await db.insert(schema.blogPosts).values({
       id,
-      createdAt: new Date(),
-      image: insertPost.image || null,
-      category: insertPost.category || null,
-    };
-    this.blogPosts.set(id, post);
-    return post;
+      ...insertPost,
+    }).returning();
+    return result[0];
   }
 
   async updateBlogPost(id: string, insertPost: InsertBlogPost): Promise<BlogPost | undefined> {
-    const post: BlogPost = {
-      ...insertPost,
-      id,
-      createdAt: new Date(),
-      image: insertPost.image || null,
-      category: insertPost.category || null,
-    };
-    this.blogPosts.set(id, post);
-    return post;
+    const result = await db.update(schema.blogPosts)
+      .set(insertPost)
+      .where(eq(schema.blogPosts.id, id))
+      .returning();
+    return result[0];
   }
 
   async deleteBlogPost(id: string): Promise<boolean> {
-    return this.blogPosts.delete(id);
+    const result = await db.delete(schema.blogPosts)
+      .where(eq(schema.blogPosts.id, id));
+    return true;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DrizzleStorage();
 
 // Initialize with default blog posts
 const defaultBlogPosts = [
@@ -123,9 +121,16 @@ const defaultBlogPosts = [
   }
 ];
 
-// Seed default posts
+// Seed default posts if they don't exist
 (async () => {
-  for (const post of defaultBlogPosts) {
-    await storage.createBlogPost(post);
+  try {
+    const existingPosts = await storage.getAllBlogPosts();
+    if (existingPosts.length === 0) {
+      for (const post of defaultBlogPosts) {
+        await storage.createBlogPost(post);
+      }
+    }
+  } catch (error) {
+    console.error("Error seeding blog posts:", error);
   }
 })();
