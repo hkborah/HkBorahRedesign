@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save, Plus } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/hkborah-logo.png";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,19 @@ export default function AdminEditor() {
   const [title, setTitle] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [content, setContent] = React.useState("");
+  const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +57,8 @@ export default function AdminEditor() {
         category,
         excerpt: content.substring(0, 100) + "...",
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop"
+        image: imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
+        slug: title.toLowerCase().replace(/\s+/g, '-')
     };
 
     setPosts([newPost, ...posts]);
@@ -52,6 +66,10 @@ export default function AdminEditor() {
     setTitle("");
     setCategory("");
     setContent("");
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
 
     toast({
         title: "Intelligence Published",
@@ -127,6 +145,43 @@ export default function AdminEditor() {
                                 placeholder="e.g. THOUGHTS, WAR STORIES, BLUEPRINT" 
                                 className="bg-slate-950 border-slate-800 text-slate-200 font-mono text-sm uppercase" 
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-slate-400">Featured Image</Label>
+                            <div className="relative">
+                              {imagePreview ? (
+                                <div className="relative h-48 w-full rounded-lg overflow-hidden border-2 border-amber-500/30 bg-slate-900">
+                                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setImagePreview(null);
+                                      if (fileInputRef.current) fileInputRef.current.value = "";
+                                    }}
+                                    className="absolute top-2 right-2 bg-slate-950/90 hover:bg-slate-950 text-amber-500 px-3 py-1 rounded text-sm"
+                                  >
+                                    Change
+                                  </button>
+                                </div>
+                              ) : (
+                                <label 
+                                  onClick={() => fileInputRef.current?.click()}
+                                  className="flex flex-col items-center justify-center h-48 rounded-lg border-2 border-dashed border-slate-700 hover:border-amber-500/50 bg-slate-900/30 cursor-pointer transition-colors"
+                                >
+                                  <Upload className="h-8 w-8 text-slate-500 mb-2" />
+                                  <span className="text-slate-400 text-sm">Click to upload image</span>
+                                  <span className="text-slate-600 text-xs">or drag and drop</span>
+                                </label>
+                              )}
+                              <input 
+                                ref={fileInputRef}
+                                type="file" 
+                                accept="image/*" 
+                                onChange={handleImageUpload}
+                                className="hidden" 
+                              />
+                            </div>
                         </div>
 
                         <div className="space-y-2">
