@@ -5,8 +5,8 @@ import { ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BLOG_POSTS } from "@/lib/data";
 // Import images from attached assets
-import logoUrl from "../../../attached_assets/hkborah-logo.png";
-import bookCoverUrl from "../../../attached_assets/book-cover-order-of-chaos.png";
+import logoUrl from "@assets/hkborah-logo.png";
+import bookCoverUrl from "@assets/book-cover-order-of-chaos.png";
 
 export function IntelligenceSidebar() {
   return (
