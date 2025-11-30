@@ -99,8 +99,6 @@ export default function Journal() {
                                 </div>
                                 <div className="p-6 flex-1 flex flex-col">
                                     <div className="flex items-center gap-3 text-xs font-mono text-slate-500 uppercase tracking-widest mb-3">
-                                        <span className="text-amber-500/80">{post.category}</span>
-                                        <span className="w-1 h-1 rounded-full bg-slate-700"></span>
                                         <span>{post.date}</span>
                                     </div>
                                     <h2 className="text-xl font-serif font-bold text-slate-200 group-hover:text-amber-500 transition-colors mb-3 leading-snug">
