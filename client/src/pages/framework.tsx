@@ -65,12 +65,9 @@ export default function Framework() {
                     <div className="flex gap-6 items-start justify-center">
                         {/* Step 01 */}
                         <div className="flex flex-col items-center" style={{ width: '280px' }}>
-                            {/* Line connecting point */}
-                            <div className="relative w-full flex justify-center mb-2">
-                                <div className="absolute h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500" style={{ width: '100%', top: '20px' }}></div>
-                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg relative z-10">
-                                    <div className="text-3xl">⚙️</div>
-                                </div>
+                            {/* Icon Circle - Transparent */}
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                                <div className="text-3xl">⚙️</div>
                             </div>
                             
                             {/* 3D Arrow Box */}
@@ -89,12 +86,9 @@ export default function Framework() {
 
                         {/* Step 02 */}
                         <div className="flex flex-col items-center" style={{ width: '280px' }}>
-                            {/* Line connecting point */}
-                            <div className="relative w-full flex justify-center mb-2">
-                                <div className="absolute h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500" style={{ width: '100%', top: '20px' }}></div>
-                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center shadow-lg relative z-10">
-                                    <div className="text-3xl">📖</div>
-                                </div>
+                            {/* Icon Circle - Transparent */}
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                                <div className="text-3xl">📖</div>
                             </div>
                             
                             {/* 3D Arrow Box */}
@@ -113,12 +107,9 @@ export default function Framework() {
 
                         {/* Step 03 */}
                         <div className="flex flex-col items-center" style={{ width: '280px' }}>
-                            {/* Line connecting point */}
-                            <div className="relative w-full flex justify-center mb-2">
-                                <div className="absolute h-1 bg-gradient-to-r from-amber-500 via-slate-500 to-emerald-500" style={{ width: '100%', top: '20px' }}></div>
-                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg relative z-10">
-                                    <div className="text-3xl">💬</div>
-                                </div>
+                            {/* Icon Circle - Transparent */}
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                                <div className="text-3xl">💬</div>
                             </div>
                             
                             {/* 3D Arrow Box */}
