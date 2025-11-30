@@ -1,7 +1,7 @@
 export const CHAT_INITIAL_MESSAGES = [
   {
     role: "assistant",
-    content: "Welcome.\n\nI am HK Borah's digital twin.\n\nI can help you validate ideas, fix broken processes, or scale your startup using the Architectural Scaling Framework.\n\nWhat challenge are you facing today?"
+    content: "**Welcome.**\n\nI am HK Borah's digital twin. I can help you validate ideas, fix broken processes, or scale your startup using the Architectural Scaling Framework.\n\nWhat challenge are you facing today?"
   }
 ];
 
