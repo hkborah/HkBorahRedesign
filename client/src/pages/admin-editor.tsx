@@ -106,12 +106,14 @@ export default function AdminEditor() {
     }
   };
 
-  // Sync content state to contentEditable div innerHTML
+  // Only sync innerHTML when loading a post for editing
   React.useEffect(() => {
-    if (contentRef.current && content !== contentRef.current.innerHTML) {
+    if (editingPostId && contentRef.current && content) {
       contentRef.current.innerHTML = content;
+    } else if (!editingPostId && contentRef.current) {
+      contentRef.current.innerHTML = '';
     }
-  }, [content]);
+  }, [editingPostId]);
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
