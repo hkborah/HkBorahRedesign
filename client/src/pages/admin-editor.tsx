@@ -93,8 +93,29 @@ export default function AdminEditor() {
   };
 
   const applyFormatting = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
+    // Ensure the contentEditable div is focused first
     contentRef.current?.focus();
+    
+    // Get current selection
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return;
+    }
+    
+    // Save the range
+    const range = selection.getRangeAt(0);
+    
+    // Apply the formatting command
+    try {
+      document.execCommand(command, false, value);
+    } catch (e) {
+      console.error('Format command failed:', e);
+    }
+    
+    // Restore focus
+    contentRef.current?.focus();
+    
+    // Update content state
     if (contentRef.current) {
       setContent(contentRef.current.innerHTML);
     }
