@@ -2,7 +2,7 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Target, Award, Briefcase, GraduationCap } from "lucide-react";
 import { Link } from "wouter";
-import logoUrl from "@assets/hkborah-logo.png";
+import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 
 export default function About() {
   return (

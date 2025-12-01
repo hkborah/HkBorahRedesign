@@ -3,7 +3,7 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { Link } from "wouter";
-import logoUrl from "@assets/hkborah-logo.png";
+import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { DiagnosticMatrix } from "@/components/framework/diagnostic-matrix";
 import { CaseFileCodex } from "@/components/framework/case-file-codex";
 import { IdeaClinic } from "@/components/framework/idea-clinic";

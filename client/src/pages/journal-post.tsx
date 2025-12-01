@@ -2,7 +2,7 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Share2 } from "lucide-react";
 import { Link, useRoute } from "wouter";
-import logoUrl from "@assets/hkborah-logo.png";
+import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import NotFound from "@/pages/not-found";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";

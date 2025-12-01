@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Calendar, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { BLOG_POSTS } from "@/lib/data";
 import * as React from "react";
-import logoUrl from "@assets/hkborah-logo.png";
+import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
 import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
 import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";

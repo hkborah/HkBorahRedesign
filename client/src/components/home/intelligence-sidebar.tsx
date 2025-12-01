@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BLOG_POSTS } from "@/lib/data";
 // Import images from attached assets
-import logoUrl from "@assets/hkborah-logo.png";
+import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import bookCoverUrl from "@assets/book-cover-order-of-chaos.png";
 
 export function IntelligenceSidebar() {
