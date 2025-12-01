@@ -404,7 +404,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('bold')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('bold'); }}
                                   title="Bold"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -414,7 +414,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('italic')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('italic'); }}
                                   title="Italic"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -424,7 +424,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('underline')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('underline'); }}
                                   title="Underline"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -435,7 +435,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('formatBlock', 'h1')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', 'h1'); }}
                                   title="Heading 1"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -445,7 +445,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('formatBlock', 'h2')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', 'h2'); }}
                                   title="Heading 2"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -455,7 +455,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('formatBlock', 'h3')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', 'h3'); }}
                                   title="Heading 3"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -466,7 +466,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('insertUnorderedList')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('insertUnorderedList'); }}
                                   title="Bullet List"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -477,7 +477,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('indent')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('indent'); }}
                                   title="Indent"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -487,7 +487,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => applyFormatting('outdent')}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('outdent'); }}
                                   title="Outdent"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
