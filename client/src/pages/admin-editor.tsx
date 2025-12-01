@@ -106,6 +106,13 @@ export default function AdminEditor() {
     }
   };
 
+  // Sync content state to contentEditable div innerHTML
+  React.useEffect(() => {
+    if (contentRef.current && content !== contentRef.current.innerHTML) {
+      contentRef.current.innerHTML = content;
+    }
+  }, [content]);
+
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     
@@ -465,16 +472,19 @@ export default function AdminEditor() {
                                 </Button>
                               </div>
                             </div>
-                            <div 
-                                ref={contentRef}
-                                contentEditable
-                                onInput={handleContentChange}
-                                onPaste={handlePaste}
-                                suppressContentEditableWarning
-                                className="bg-slate-950 border border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed p-4 rounded overflow-auto focus:outline-none focus:border-amber-500/30"
-                                style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
-                            >
-                              {content || 'Begin typing...'}
+                            <div className="relative">
+                              <div 
+                                  ref={contentRef}
+                                  contentEditable
+                                  onInput={handleContentChange}
+                                  onPaste={handlePaste}
+                                  suppressContentEditableWarning
+                                  className="bg-slate-950 border border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed p-4 rounded overflow-auto focus:outline-none focus:border-amber-500/30 w-full"
+                                  style={{ wordWrap: 'break-word', overflowWrap: 'break-word', maxWidth: '100%', whiteSpace: 'pre-wrap' }}
+                              />
+                              {content === '' && (
+                                <div className="absolute top-4 left-4 text-slate-500 text-sm pointer-events-none">Begin typing...</div>
+                              )}
                             </div>
                         </div>
 
