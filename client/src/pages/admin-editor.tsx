@@ -93,27 +93,33 @@ export default function AdminEditor() {
   };
 
   const applyFormatting = (command: string, value?: string) => {
-    // Ensure the contentEditable div is focused first
-    contentRef.current?.focus();
-    
-    // Get current selection
+    // Save the current selection before anything happens
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) {
-      return;
+    let savedRange: Range | null = null;
+    
+    if (selection && selection.rangeCount > 0) {
+      savedRange = selection.getRangeAt(0).cloneRange();
     }
     
-    // Save the range
-    const range = selection.getRangeAt(0);
+    // Focus the editor
+    contentRef.current?.focus();
     
-    // Apply the formatting command
+    // Restore the selection
+    if (savedRange && selection) {
+      try {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+      } catch (e) {
+        console.error('Failed to restore selection:', e);
+      }
+    }
+    
+    // Now apply the command with the selection in place
     try {
       document.execCommand(command, false, value);
     } catch (e) {
       console.error('Format command failed:', e);
     }
-    
-    // Restore focus
-    contentRef.current?.focus();
     
     // Update content state
     if (contentRef.current) {
