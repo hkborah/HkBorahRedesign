@@ -3,16 +3,48 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, ChevronDown, ChevronUp, FileText, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface ChatSession {
+  id: string;
+  transcript: string;
+  createdAt: string;
+}
 
 export default function AdminEditor() {
   const { toast } = useToast();
   const { isAuthenticated, logout } = useAuth();
   const [, navigate] = useLocation();
+
+  // All hooks must be declared before any conditional returns
+  const [posts, setPosts] = React.useState<any[]>([]);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [showPreview, setShowPreview] = React.useState(false);
+  const [editingPostId, setEditingPostId] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Transcript state
+  const [sessions, setSessions] = React.useState<ChatSession[]>([]);
+  const [transcriptsLoading, setTranscriptsLoading] = React.useState(false);
+  const [transcriptsFetched, setTranscriptsFetched] = React.useState(false);
+  const [expandedId, setExpandedId] = React.useState<string | null>(null);
+  const [fromDate, setFromDate] = React.useState<string>("");
+  const [toDate, setToDate] = React.useState<string>("");
+  const [activeTab, setActiveTab] = React.useState("blog");
+
+  // Form state
+  const [title, setTitle] = React.useState("");
+  const [category, setCategory] = React.useState("");
+  const [content, setContent] = React.useState("");
+  const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const savedSelectionRef = React.useRef<Range | null>(null);
 
   // Redirect to login if not authenticated
   React.useEffect(() => {
@@ -20,16 +52,6 @@ export default function AdminEditor() {
       navigate("/login/editor");
     }
   }, [isAuthenticated, navigate]);
-
-  if (!isAuthenticated) {
-    return <div className="min-h-screen bg-slate-950" />;
-  }
-
-  const [posts, setPosts] = React.useState<any[]>([]);
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [showPreview, setShowPreview] = React.useState(false);
-  const [editingPostId, setEditingPostId] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
 
   // Fetch posts from database on component load
   React.useEffect(() => {
@@ -46,14 +68,122 @@ export default function AdminEditor() {
     };
     fetchPosts();
   }, []);
-  
-  // Form state
-  const [title, setTitle] = React.useState("");
-  const [category, setCategory] = React.useState("");
-  const [content, setContent] = React.useState("");
-  const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  // Filter sessions by date range
+  const filteredSessions = React.useMemo(() => {
+    return sessions.filter(session => {
+      const sessionDate = new Date(session.createdAt);
+      if (fromDate && new Date(fromDate) > sessionDate) return false;
+      if (toDate && new Date(toDate + "T23:59:59") < sessionDate) return false;
+      return true;
+    });
+  }, [sessions, fromDate, toDate]);
+
+  // Only sync innerHTML when loading a post for editing
+  React.useEffect(() => {
+    if (editingPostId && contentRef.current && content) {
+      contentRef.current.innerHTML = content;
+    } else if (!editingPostId && contentRef.current) {
+      contentRef.current.innerHTML = '';
+    }
+  }, [editingPostId]);
+
+  // Fetch transcripts when switching to transcripts tab
+  React.useEffect(() => {
+    if (activeTab === 'transcripts' && !transcriptsFetched && !transcriptsLoading) {
+      const doFetch = async () => {
+        setTranscriptsLoading(true);
+        try {
+          const response = await fetch("/api/chat/sessions");
+          if (response.ok) {
+            const data = await response.json();
+            setSessions(data);
+            setTranscriptsFetched(true);
+          }
+        } catch (error) {
+          console.error("Error fetching transcripts:", error);
+        } finally {
+          setTranscriptsLoading(false);
+        }
+      };
+      doFetch();
+    }
+  }, [activeTab, transcriptsFetched, transcriptsLoading]);
+
+  // Early return after all hooks are declared
+  if (!isAuthenticated) {
+    return <div className="min-h-screen bg-slate-950" />;
+  }
+
+  // Format date for display
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  };
+
+  // Get preview of transcript
+  const getPreview = (transcript: string) => {
+    const lines = transcript.split('\n').filter(line => line.trim());
+    return lines.slice(0, 3).join(' ').substring(0, 150) + '...';
+  };
+
+  // Download single transcript
+  const downloadTranscript = (session: ChatSession) => {
+    const blob = new Blob([session.transcript], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const date = new Date(session.createdAt).toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `HK_Borah_Idea_Clinic_${date}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Bulk download filtered transcripts
+  const bulkDownloadTranscripts = () => {
+    if (filteredSessions.length === 0) {
+      toast({
+        title: "No Transcripts",
+        description: "No transcripts match your date filter.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const combined = filteredSessions.map(session => {
+      const date = formatDate(session.createdAt);
+      return `========================================\nSession: ${date}\n========================================\n\n${session.transcript}`;
+    }).join('\n\n\n');
+
+    const blob = new Blob([combined], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateRange = fromDate && toDate 
+      ? `${fromDate}_to_${toDate}` 
+      : fromDate 
+        ? `from_${fromDate}` 
+        : toDate 
+          ? `until_${toDate}` 
+          : 'all';
+    a.href = url;
+    a.download = `HK_Borah_Transcripts_${dateRange}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download Started",
+      description: `Downloading ${filteredSessions.length} transcript(s).`,
+    });
+  };
 
   const validateImageDimensions = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -92,9 +222,6 @@ export default function AdminEditor() {
     }
   };
 
-  // Store selection globally so it persists across button clicks
-  const savedSelectionRef = React.useRef<Range | null>(null);
-  
   // Save selection whenever user makes one in the editor
   const saveSelection = () => {
     const selection = window.getSelection();
@@ -148,15 +275,6 @@ export default function AdminEditor() {
       setContent(contentRef.current.innerHTML);
     }
   };
-
-  // Only sync innerHTML when loading a post for editing
-  React.useEffect(() => {
-    if (editingPostId && contentRef.current && content) {
-      contentRef.current.innerHTML = content;
-    } else if (!editingPostId && contentRef.current) {
-      contentRef.current.innerHTML = '';
-    }
-  }, [editingPostId]);
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -315,33 +433,45 @@ export default function AdminEditor() {
             </div>
         </div>
 
-        <div className="container mx-auto px-6 py-12 max-w-6xl flex gap-8">
-            {/* Sidebar List */}
-            <div className="w-1/3 border-r border-slate-900 pr-8 hidden md:block">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-serif font-bold text-slate-200">Archives</h2>
-                    <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}><Plus className="h-4 w-4" /></Button>
-                </div>
-                <div className="space-y-4">
-                    {posts.map(post => (
-                        <div key={post.id} className="p-4 bg-slate-900/30 hover:bg-slate-900/60 rounded border border-slate-800/50 group transition-colors cursor-pointer" onClick={() => loadPostForEdit(post)}>
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex-1">
-                                <h4 className="text-sm font-medium text-slate-300 mb-1">{post.title}</h4>
-                                <span className="text-[10px] font-mono text-slate-500 uppercase">{post.date}</span>
-                              </div>
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                <button onClick={(e) => { e.stopPropagation(); loadPostForEdit(post); }} className="text-amber-500 hover:text-amber-400"><Edit className="h-4 w-4" /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }} className="text-red-500 hover:text-red-400"><Trash2 className="h-4 w-4" /></button>
-                              </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+        <div className="container mx-auto px-6 py-6 max-w-6xl">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="bg-slate-900/50 border border-slate-800 mb-8">
+              <TabsTrigger value="blog" className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 gap-2">
+                <FileText className="h-4 w-4" /> Blog Editor
+              </TabsTrigger>
+              <TabsTrigger value="transcripts" className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 gap-2">
+                <MessageSquare className="h-4 w-4" /> Transcripts
+              </TabsTrigger>
+            </TabsList>
 
-            {/* Editor Area */}
-            <div className="flex-1">
+            <TabsContent value="blog">
+              <div className="flex gap-8">
+                {/* Sidebar List */}
+                <div className="w-1/3 border-r border-slate-900 pr-8 hidden md:block">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-lg font-serif font-bold text-slate-200">Archives</h2>
+                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}><Plus className="h-4 w-4" /></Button>
+                    </div>
+                    <div className="space-y-4">
+                        {posts.map(post => (
+                            <div key={post.id} className="p-4 bg-slate-900/30 hover:bg-slate-900/60 rounded border border-slate-800/50 group transition-colors cursor-pointer" onClick={() => loadPostForEdit(post)}>
+                                <div className="flex justify-between items-start mb-2">
+                                  <div className="flex-1">
+                                    <h4 className="text-sm font-medium text-slate-300 mb-1">{post.title}</h4>
+                                    <span className="text-[10px] font-mono text-slate-500 uppercase">{post.date}</span>
+                                  </div>
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                    <button onClick={(e) => { e.stopPropagation(); loadPostForEdit(post); }} className="text-amber-500 hover:text-amber-400"><Edit className="h-4 w-4" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }} className="text-red-500 hover:text-red-400"><Trash2 className="h-4 w-4" /></button>
+                                  </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Editor Area */}
+                <div className="flex-1">
                 <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8">
                     <div className="flex justify-between items-center mb-8">
                       <h2 className="text-2xl font-serif font-bold text-slate-100">{editingPostId ? "Edit Intelligence Report" : "New Intelligence Report"}</h2>
@@ -569,7 +699,121 @@ export default function AdminEditor() {
                     </form>
                     )}
                 </div>
-            </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="transcripts">
+              <div className="space-y-6">
+                {/* Date Filters and Bulk Download */}
+                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-6">
+                  <div className="flex flex-wrap items-end gap-4">
+                    <div className="flex-1 min-w-[200px]">
+                      <Label className="text-slate-400 text-sm mb-2 block">From Date</Label>
+                      <Input
+                        type="date"
+                        value={fromDate}
+                        onChange={(e) => setFromDate(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-slate-200"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[200px]">
+                      <Label className="text-slate-400 text-sm mb-2 block">To Date</Label>
+                      <Input
+                        type="date"
+                        value={toDate}
+                        onChange={(e) => setToDate(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-slate-200"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                        onClick={() => { setFromDate(""); setToDate(""); }}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        className="bg-amber-500 hover:bg-amber-600 text-slate-950 gap-2"
+                        onClick={bulkDownloadTranscripts}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download {filteredSessions.length > 0 ? `(${filteredSessions.length})` : "All"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sessions List */}
+                {transcriptsLoading ? (
+                  <div className="text-center py-12">
+                    <p className="text-slate-400">Loading transcripts...</p>
+                  </div>
+                ) : filteredSessions.length === 0 ? (
+                  <div className="text-center py-12 bg-slate-900/30 rounded-xl border border-slate-800">
+                    <MessageSquare className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                    <p className="text-slate-400">No transcripts found.</p>
+                    <p className="text-slate-500 text-sm mt-2">
+                      {sessions.length > 0 ? "Try adjusting your date filter." : "Saved consultations will appear here."}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredSessions.map((session) => (
+                      <div
+                        key={session.id}
+                        className="bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 transition-colors"
+                      >
+                        <div 
+                          className="p-6 cursor-pointer"
+                          onClick={() => setExpandedId(expandedId === session.id ? null : session.id)}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 text-xs font-mono text-slate-500 mb-2">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(session.createdAt)}
+                              </div>
+                              <p className="text-slate-300 text-sm font-light">
+                                {getPreview(session.transcript)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-amber-500"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadTranscript(session);
+                                }}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                              {expandedId === session.id ? (
+                                <ChevronUp className="h-5 w-5 text-slate-500" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5 text-slate-500" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {expandedId === session.id && (
+                          <div className="px-6 pb-6 border-t border-slate-800 pt-4">
+                            <pre className="text-slate-300 text-sm font-light whitespace-pre-wrap bg-slate-950 p-4 rounded-lg max-h-96 overflow-auto">
+                              {session.transcript}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </MainLayout>
