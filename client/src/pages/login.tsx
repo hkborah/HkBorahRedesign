@@ -24,7 +24,7 @@ export default function Login() {
   const { login } = useAuth();
   const [, navigate] = useLocation();
   const [showForgotPassword, setShowForgotPassword] = React.useState(false);
-  const [forgotEmail, setForgotEmail] = React.useState("hkborah@gmail.com");
+  const [forgotEmail, setForgotEmail] = React.useState("");
   const [isSendingReset, setIsSendingReset] = React.useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -162,7 +162,7 @@ export default function Login() {
                             <Input 
                               id="forgot-email" 
                               type="email" 
-                              placeholder="hkborah@gmail.com" 
+                              placeholder="your@email.com" 
                               value={forgotEmail}
                               onChange={(e) => setForgotEmail(e.target.value)}
                               className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
