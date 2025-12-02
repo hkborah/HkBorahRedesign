@@ -3,12 +3,23 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, FileText, MessageSquare, Settings, Lock } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ChatSession {
   id: string;
@@ -38,6 +49,10 @@ export default function AdminEditor() {
   const [activeTab, setActiveTab] = React.useState("blog");
   const [pageSize, setPageSize] = React.useState<number>(50);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [selectedSessionIds, setSelectedSessionIds] = React.useState<Set<string>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [deleteType, setDeleteType] = React.useState<"selected" | "all">("selected");
+  const [deleting, setDeleting] = React.useState(false);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = React.useState("");
@@ -207,6 +222,131 @@ export default function AdminEditor() {
       title: "Download Started",
       description: `Downloading ${filteredSessions.length} transcript(s).`,
     });
+  };
+
+  // Toggle single session selection
+  const toggleSessionSelect = (id: string) => {
+    const newSelected = new Set(selectedSessionIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedSessionIds(newSelected);
+  };
+
+  // Check if all visible sessions are selected
+  const currentPageSessionIds = paginatedSessions.map(s => s.id);
+  const allPageSelected = currentPageSessionIds.length > 0 && currentPageSessionIds.every(id => selectedSessionIds.has(id));
+
+  // Toggle select all on current page
+  const toggleSelectPage = () => {
+    const newSelected = new Set(selectedSessionIds);
+    if (allPageSelected) {
+      currentPageSessionIds.forEach(id => newSelected.delete(id));
+    } else {
+      currentPageSessionIds.forEach(id => newSelected.add(id));
+    }
+    setSelectedSessionIds(newSelected);
+  };
+
+  // Refetch sessions from database
+  const refetchSessions = async () => {
+    try {
+      const response = await fetch("/api/chat/sessions", {
+        headers: { ...getAuthHeader() }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSessions(data);
+      }
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+    }
+  };
+
+  // Delete selected sessions
+  const handleDeleteSelected = async () => {
+    if (selectedSessionIds.size === 0) return;
+    setDeleting(true);
+    try {
+      const response = await fetch("/api/chat/sessions/delete-multiple", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeader() },
+        body: JSON.stringify({ ids: Array.from(selectedSessionIds) })
+      });
+      if (response.ok) {
+        toast({
+          title: "Deleted",
+          description: `${selectedSessionIds.size} transcript(s) permanently deleted.`,
+        });
+        setSelectedSessionIds(new Set());
+        setSelectedSession(null);
+        await refetchSessions();
+      } else if (response.status === 401) {
+        navigate("/login/editor");
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete transcripts. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting sessions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete transcripts.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  // Delete all sessions
+  const handleDeleteAll = async () => {
+    setDeleting(true);
+    try {
+      const response = await fetch("/api/chat/sessions", {
+        method: "DELETE",
+        headers: getAuthHeader()
+      });
+      if (response.ok) {
+        toast({
+          title: "Deleted",
+          description: "All transcripts permanently deleted.",
+        });
+        setSelectedSessionIds(new Set());
+        setSelectedSession(null);
+        await refetchSessions();
+      } else if (response.status === 401) {
+        navigate("/login/editor");
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete transcripts. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting all sessions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete transcripts.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  // Open delete confirmation dialog
+  const openDeleteDialog = (type: "selected" | "all") => {
+    setDeleteType(type);
+    setDeleteDialogOpen(true);
   };
 
   // Handle password change
@@ -863,6 +1003,27 @@ export default function AdminEditor() {
                       Clear
                     </Button>
                     <div className="flex-1" />
+                    {/* Delete Buttons */}
+                    {selectedSessionIds.size > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-700 text-red-400 hover:bg-red-900/30 hover:text-red-300 gap-2 h-8"
+                        onClick={() => openDeleteDialog("selected")}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Delete ({selectedSessionIds.size})
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-red-700 text-red-400 hover:bg-red-900/30 hover:text-red-300 gap-2 h-8"
+                      onClick={() => openDeleteDialog("all")}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Delete All
+                    </Button>
                     {/* Bulk Download */}
                     <Button
                       size="sm"
@@ -892,19 +1053,35 @@ export default function AdminEditor() {
                   <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4 min-h-[500px]">
                     {/* Compact List */}
                     <div className="bg-slate-900/30 border border-slate-800 rounded-lg overflow-hidden">
-                      <div className="p-3 border-b border-slate-800 bg-slate-900/50">
-                        <span className="text-xs font-mono text-slate-400">
-                          {pageSize === 0 ? `Showing all ${filteredSessions.length}` : `Page ${currentPage} of ${totalPages} (${filteredSessions.length} total)`}
+                      <div className="p-3 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox 
+                            checked={allPageSelected}
+                            onCheckedChange={toggleSelectPage}
+                            className="border-slate-600"
+                          />
+                          <span className="text-xs font-mono text-slate-400">Select All</span>
+                        </label>
+                        <span className="text-xs font-mono text-slate-500">
+                          {pageSize === 0 ? `${filteredSessions.length} total` : `Page ${currentPage}/${totalPages}`}
                         </span>
                       </div>
                       <div className="max-h-[450px] overflow-y-auto">
                         {paginatedSessions.map((session) => (
                           <div
                             key={session.id}
-                            onClick={() => setSelectedSession(session)}
-                            className={`px-3 py-2 cursor-pointer border-b border-slate-800/50 hover:bg-slate-800/50 transition-colors flex items-center justify-between ${selectedSession?.id === session.id ? 'bg-amber-500/10 border-l-2 border-l-amber-500' : ''}`}
+                            className={`px-3 py-2 border-b border-slate-800/50 hover:bg-slate-800/50 transition-colors flex items-center gap-2 ${selectedSession?.id === session.id ? 'bg-amber-500/10 border-l-2 border-l-amber-500' : ''} ${selectedSessionIds.has(session.id) ? 'bg-slate-800/30' : ''}`}
                           >
-                            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+                            <Checkbox 
+                              checked={selectedSessionIds.has(session.id)}
+                              onCheckedChange={() => toggleSessionSelect(session.id)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="border-slate-600 flex-shrink-0"
+                            />
+                            <div 
+                              className="flex-1 flex items-center gap-2 text-xs font-mono text-slate-400 cursor-pointer"
+                              onClick={() => setSelectedSession(session)}
+                            >
                               <Calendar className="h-3 w-3 flex-shrink-0" />
                               <span className={selectedSession?.id === session.id ? 'text-amber-500' : ''}>{formatDate(session.createdAt)}</span>
                             </div>
@@ -1045,6 +1222,34 @@ export default function AdminEditor() {
           </Tabs>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-slate-900 border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-100">
+              {deleteType === "all" ? "Delete All Transcripts" : "Delete Selected Transcripts"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              {deleteType === "all" 
+                ? `This will permanently delete all ${sessions.length} transcript(s) from the database. This action cannot be undone.`
+                : `This will permanently delete ${selectedSessionIds.size} selected transcript(s) from the database. This action cannot be undone.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deleteType === "all" ? handleDeleteAll : handleDeleteSelected}
+              className="bg-red-600 text-white hover:bg-red-700"
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Permanently"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MainLayout>
   );
 }
