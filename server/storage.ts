@@ -15,6 +15,9 @@ export interface IStorage {
   saveChatSession(transcript: string): Promise<ChatSession>;
   getAllChatSessions(): Promise<ChatSession[]>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
+  deleteChatSession(id: string): Promise<boolean>;
+  deleteChatSessions(ids: string[]): Promise<number>;
+  deleteAllChatSessions(): Promise<number>;
   getAllBlogPosts(): Promise<BlogPost[]>;
   getLatestBlogPosts(limit: number): Promise<BlogPost[]>;
   getBlogPost(id: string): Promise<BlogPost | undefined>;
