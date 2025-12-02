@@ -82,7 +82,7 @@ app.use((req, res, next) => {
   // setting up all the other routes so the index.html under
   // public is overwritten by react-router-dom router
   if (app.get("env") === "development") {
-    await setupVite(httpServer, app);
+    await setupVite(app, httpServer);
   }
 
   // ALWAYS serve the app on port 5000
