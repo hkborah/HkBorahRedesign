@@ -12,6 +12,7 @@ import Journal from "@/pages/journal";
 import JournalPost from "@/pages/journal-post";
 import About from "@/pages/about";
 import Login from "@/pages/login";
+import ResetPassword from "@/pages/reset-password";
 import AdminEditor from "@/pages/admin-editor";
 import SavedChats from "@/pages/saved-chats";
 
@@ -24,6 +25,7 @@ function AppRoutes() {
       <Route path="/journal/:id" component={JournalPost} />
       <Route path="/about" component={About} />
       <Route path="/login/editor" component={Login} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin/journal" component={AdminEditor} />
       <Route path="/admin/chats" component={SavedChats} />
       <Route component={NotFound} />

@@ -235,6 +235,107 @@ export async function registerRoutes(
     }
   });
 
+  // --- Blog Post Like Route ---
+  app.post("/api/blog/posts/:id/like", async (req, res) => {
+    try {
+      const postId = req.params.id;
+      
+      if (!postId || typeof postId !== "string" || postId.length < 1) {
+        return res.status(400).json({ error: "Invalid post ID" });
+      }
+      
+      const post = await storage.getBlogPost(postId);
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      
+      const newLikeCount = await storage.incrementBlogPostLikes(postId);
+      res.json({ success: true, likes: newLikeCount });
+    } catch (error) {
+      console.error("Error liking blog post:", error);
+      res.status(500).json({ error: "Failed to like post" });
+    }
+  });
+
+  // --- Password Reset Routes ---
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUserByUsername(email);
+      if (!user) {
+        // Don't reveal if user exists - always return success
+        return res.json({ success: true, message: "If an account exists with this email, a reset link will be sent." });
+      }
+      
+      // Generate reset token (secure random string)
+      const crypto = await import("crypto");
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+      
+      // Save token to database
+      await storage.createPasswordResetToken(email, token, expiresAt);
+      
+      // For now, log the reset link (email integration needed for actual sending)
+      const resetUrl = `${req.headers.origin || 'https://hkborah.com'}/reset-password?token=${token}`;
+      console.log(`Password reset link for ${email}: ${resetUrl}`);
+      
+      // TODO: Send email with resetUrl when email integration is set up
+      
+      res.json({ 
+        success: true, 
+        message: "If an account exists with this email, a reset link will be sent.",
+        // Only include token in development for testing
+        ...(process.env.NODE_ENV === "development" && { resetToken: token, resetUrl })
+      });
+    } catch (error) {
+      console.error("Error requesting password reset:", error);
+      res.status(500).json({ error: "Failed to process password reset request" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: "Token and new password are required" });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "New password must be at least 6 characters" });
+      }
+      
+      // Validate token
+      const resetToken = await storage.getValidPasswordResetToken(token);
+      if (!resetToken) {
+        return res.status(400).json({ error: "Invalid or expired reset token" });
+      }
+      
+      // Hash and save new password
+      const saltRounds = 10;
+      const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+      const updated = await storage.updateUserPassword(resetToken.username, newPasswordHash);
+      
+      if (!updated) {
+        return res.status(500).json({ error: "Failed to update password" });
+      }
+      
+      // Mark token as used
+      await storage.markPasswordResetTokenUsed(token);
+      
+      res.json({ success: true, message: "Password has been reset successfully" });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
+
   // --- Password Change Route ---
   app.post("/api/auth/change-password", async (req, res) => {
     try {

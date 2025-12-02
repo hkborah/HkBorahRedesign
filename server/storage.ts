@@ -1,8 +1,8 @@
-import { type User, type InsertUser, type ChatSession, type BlogPost, type InsertBlogPost } from "@shared/schema";
+import { type User, type InsertUser, type ChatSession, type BlogPost, type InsertBlogPost, type PasswordResetToken } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, gt, sql } from "drizzle-orm";
 
 // Initialize database connection
 const db = drizzle(process.env.DATABASE_URL!, { schema });
@@ -21,6 +21,10 @@ export interface IStorage {
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
   updateBlogPost(id: string, post: InsertBlogPost): Promise<BlogPost | undefined>;
   deleteBlogPost(id: string): Promise<boolean>;
+  incrementBlogPostLikes(id: string): Promise<number>;
+  createPasswordResetToken(username: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
+  getValidPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markPasswordResetTokenUsed(token: string): Promise<boolean>;
 }
 
 export class DrizzleStorage implements IStorage {
@@ -121,6 +125,44 @@ export class DrizzleStorage implements IStorage {
     const result = await db.delete(schema.blogPosts)
       .where(eq(schema.blogPosts.id, id));
     return true;
+  }
+
+  async incrementBlogPostLikes(id: string): Promise<number> {
+    const result = await db.update(schema.blogPosts)
+      .set({ likes: sql`COALESCE(${schema.blogPosts.likes}, 0) + 1` })
+      .where(eq(schema.blogPosts.id, id))
+      .returning({ likes: schema.blogPosts.likes });
+    return result[0]?.likes ?? 0;
+  }
+
+  async createPasswordResetToken(username: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {
+    const id = randomUUID();
+    const result = await db.insert(schema.passwordResetTokens).values({
+      id,
+      username,
+      token,
+      expiresAt,
+    }).returning();
+    return result[0];
+  }
+
+  async getValidPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const result = await db.query.passwordResetTokens.findFirst({
+      where: and(
+        eq(schema.passwordResetTokens.token, token),
+        eq(schema.passwordResetTokens.used, "false"),
+        gt(schema.passwordResetTokens.expiresAt, new Date())
+      ),
+    });
+    return result;
+  }
+
+  async markPasswordResetTokenUsed(token: string): Promise<boolean> {
+    const result = await db.update(schema.passwordResetTokens)
+      .set({ used: "true" })
+      .where(eq(schema.passwordResetTokens.token, token))
+      .returning();
+    return result.length > 0;
   }
 }
 

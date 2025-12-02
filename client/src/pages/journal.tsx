@@ -1,6 +1,6 @@
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Calendar, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Sparkles, Heart, Share2 } from "lucide-react";
 import { Link } from "wouter";
 import { BLOG_POSTS } from "@/lib/data";
 import * as React from "react";
@@ -9,6 +9,8 @@ import blueprintImg from "@assets/generated_images/blueprint_architecture_framew
 import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
 import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";
 import { motion } from "framer-motion";
+import { ShareDropdown } from "@/components/share-dropdown";
+import { LikeButton } from "@/components/like-button";
 
 // Map @assets paths to imported images
 const imageAssetMap: Record<string, string> = {
@@ -29,7 +31,7 @@ function resolveImagePath(imagePath: string | undefined): string {
 }
 
 export default function Journal() {
-  const [posts, setPosts] = React.useState<typeof BLOG_POSTS>([]);
+  const [posts, setPosts] = React.useState<Array<typeof BLOG_POSTS[number] & { likes?: number }>>([]);
   const [loading, setLoading] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
   const postsPerPage = 6;
@@ -161,8 +163,23 @@ export default function Journal() {
                               <p className="text-slate-400 text-lg font-light mb-6 line-clamp-3">
                                   {featuredPost.excerpt}
                               </p>
-                              <div className="flex items-center gap-2 text-amber-500 font-medium group-hover:translate-x-2 transition-transform">
-                                  Read Full Report <ArrowRight className="h-4 w-4" />
+                              <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-amber-500 font-medium group-hover:translate-x-2 transition-transform">
+                                      Read Full Report <ArrowRight className="h-4 w-4" />
+                                  </div>
+                                  <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
+                                      <LikeButton 
+                                        postId={featuredPost.id} 
+                                        initialLikes={featuredPost.likes || 0}
+                                        size="sm"
+                                      />
+                                      <ShareDropdown 
+                                        title={featuredPost.title} 
+                                        excerpt={featuredPost.excerpt}
+                                        url={`/journal/${featuredPost.id}`}
+                                        size="sm"
+                                      />
+                                  </div>
                               </div>
                           </div>
                       </div>
@@ -200,8 +217,25 @@ export default function Journal() {
                                     <p className="text-slate-400 text-sm font-light line-clamp-3 mb-4 flex-1">
                                         {post.excerpt}
                                     </p>
-                                    <div className="flex items-center gap-2 text-slate-500 text-xs group-hover:text-amber-500 transition-colors mt-auto pt-4 border-t border-slate-800/50">
-                                        Read Report <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-800/50">
+                                        <div className="flex items-center gap-2 text-slate-500 text-xs group-hover:text-amber-500 transition-colors">
+                                            Read Report <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                        <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
+                                            <LikeButton 
+                                              postId={post.id} 
+                                              initialLikes={post.likes || 0}
+                                              size="sm"
+                                              className="h-7 px-2 text-xs"
+                                            />
+                                            <ShareDropdown 
+                                              title={post.title} 
+                                              excerpt={post.excerpt}
+                                              url={`/journal/${post.id}`}
+                                              size="sm"
+                                              className="h-7 px-2 text-xs"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

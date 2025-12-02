@@ -1,6 +1,6 @@
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
@@ -10,6 +10,8 @@ import NotFound from "@/pages/not-found";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ShareDropdown } from "@/components/share-dropdown";
+import { LikeButton } from "@/components/like-button";
 
 // Map @assets paths to imported images
 const imageAssetMap: Record<string, string> = {
@@ -101,9 +103,17 @@ export default function JournalPost() {
                         <ArrowLeft className="h-4 w-4 mr-2" /> Previous Intelligence
                     </Button>
                 </Link>
-                <Button variant="outline" className="border-slate-800 text-slate-400 hover:text-amber-500 hover:bg-slate-900">
-                    <Share2 className="h-4 w-4 mr-2" /> Share Protocol
-                </Button>
+                <div className="flex items-center gap-3">
+                    <LikeButton 
+                      postId={post.id} 
+                      initialLikes={post.likes || 0}
+                    />
+                    <ShareDropdown 
+                      title={post.title} 
+                      excerpt={post.excerpt}
+                      url={`/journal/${post.id}`}
+                    />
+                </div>
             </div>
         </article>
       </div>
