@@ -84,9 +84,8 @@ export function DigitalTwin() {
       .join('\n\n---\n\n');
 
     try {
-      // 2. Send to Server (Silent Drive Upload)
-      // We await this to ensure it actually saves to the backend/Drive first
-      const response = await fetch(`${CHAT_API}/api/chat/save`, {
+      // 2. Send to local PostgreSQL database for transcript storage
+      const response = await fetch('/api/chat/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages })
@@ -94,12 +93,6 @@ export function DigitalTwin() {
 
       if (!response.ok) {
         console.error("Server save failed:", response.statusText);
-        // We don't throw here to ensure local download still happens
-      } else {
-        const data = await response.json();
-        if (!data.googleDrive) {
-            console.warn("Google Drive upload may have failed internally.");
-        }
       }
 
       // 3. Trigger Local Download (User confirmation action)

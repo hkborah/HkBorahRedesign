@@ -35,17 +35,17 @@ export function IntelligenceSidebar() {
   React.useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch("/api/blog/posts");
+        // Fetch only latest 4 posts by timestamp
+        const response = await fetch("/api/blog/latest/4");
         if (response.ok) {
           const data = await response.json();
-          // Use API posts directly - they already include seeded defaults + new posts
-          setPosts(data && data.length > 0 ? data : BLOG_POSTS);
+          setPosts(data && data.length > 0 ? data : BLOG_POSTS.slice(0, 4));
         } else {
-          setPosts(BLOG_POSTS);
+          setPosts(BLOG_POSTS.slice(0, 4));
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
-        setPosts(BLOG_POSTS);
+        setPosts(BLOG_POSTS.slice(0, 4));
       }
     };
     fetchPosts();

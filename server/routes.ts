@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { google } from "googleapis";
+import bcrypt from "bcrypt";
 
 // Google Drive integration - Standard Google Cloud Auth
 // This matches how your live Cloud Run instance connects to Drive
@@ -156,6 +157,17 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/blog/latest/:limit", async (req, res) => {
+    try {
+      const limit = parseInt(req.params.limit) || 4;
+      const posts = await storage.getLatestBlogPosts(limit);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching latest blog posts:", error);
+      res.status(500).json({ error: "Failed to fetch latest blog posts" });
+    }
+  });
+
   app.get("/api/blog/posts/:id", async (req, res) => {
     try {
       const post = await storage.getBlogPost(req.params.id);
@@ -220,6 +232,55 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error deleting blog post:", error);
       res.status(500).json({ error: "Failed to delete blog post" });
+    }
+  });
+
+  // --- Password Change Route ---
+  app.post("/api/auth/change-password", async (req, res) => {
+    try {
+      const { username, currentPassword, newPassword } = req.body;
+      
+      if (!username || !currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "New password must be at least 6 characters" });
+      }
+      
+      // Get user and verify current password
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Check if password is hashed (starts with $2) or plaintext
+      const isHashed = user.password.startsWith('$2');
+      let passwordValid = false;
+      
+      if (isHashed) {
+        passwordValid = await bcrypt.compare(currentPassword, user.password);
+      } else {
+        passwordValid = currentPassword === user.password;
+      }
+      
+      if (!passwordValid) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+      
+      // Hash and save new password
+      const saltRounds = 10;
+      const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+      const updated = await storage.updateUserPassword(username, newPasswordHash);
+      
+      if (!updated) {
+        return res.status(500).json({ error: "Failed to update password" });
+      }
+      
+      res.json({ success: true, message: "Password changed successfully" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ error: "Failed to change password" });
     }
   });
 

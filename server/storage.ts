@@ -11,10 +11,12 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPassword(username: string, newPasswordHash: string): Promise<boolean>;
   saveChatSession(transcript: string): Promise<ChatSession>;
   getAllChatSessions(): Promise<ChatSession[]>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
   getAllBlogPosts(): Promise<BlogPost[]>;
+  getLatestBlogPosts(limit: number): Promise<BlogPost[]>;
   getBlogPost(id: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
   updateBlogPost(id: string, post: InsertBlogPost): Promise<BlogPost | undefined>;
@@ -45,6 +47,14 @@ export class DrizzleStorage implements IStorage {
     return result[0];
   }
 
+  async updateUserPassword(username: string, newPasswordHash: string): Promise<boolean> {
+    const result = await db.update(schema.users)
+      .set({ password: newPasswordHash })
+      .where(eq(schema.users.username, username))
+      .returning();
+    return result.length > 0;
+  }
+
   async saveChatSession(transcript: string): Promise<ChatSession> {
     const id = randomUUID();
     const result = await db.insert(schema.chatSessions).values({
@@ -69,7 +79,17 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getAllBlogPosts(): Promise<BlogPost[]> {
-    const posts = await db.query.blogPosts.findMany();
+    const posts = await db.query.blogPosts.findMany({
+      orderBy: (blogPosts, { desc }) => [desc(blogPosts.createdAt)],
+    });
+    return posts;
+  }
+
+  async getLatestBlogPosts(limit: number): Promise<BlogPost[]> {
+    const posts = await db.query.blogPosts.findMany({
+      orderBy: (blogPosts, { desc }) => [desc(blogPosts.createdAt)],
+      limit,
+    });
     return posts;
   }
 

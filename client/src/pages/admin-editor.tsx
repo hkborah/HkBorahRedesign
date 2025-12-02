@@ -3,7 +3,7 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, ChevronDown, ChevronUp, FileText, MessageSquare } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, FileText, MessageSquare, Settings, Lock } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
@@ -32,10 +32,18 @@ export default function AdminEditor() {
   const [sessions, setSessions] = React.useState<ChatSession[]>([]);
   const [transcriptsLoading, setTranscriptsLoading] = React.useState(false);
   const [transcriptsFetched, setTranscriptsFetched] = React.useState(false);
-  const [expandedId, setExpandedId] = React.useState<string | null>(null);
+  const [selectedSession, setSelectedSession] = React.useState<ChatSession | null>(null);
   const [fromDate, setFromDate] = React.useState<string>("");
   const [toDate, setToDate] = React.useState<string>("");
   const [activeTab, setActiveTab] = React.useState("blog");
+  const [pageSize, setPageSize] = React.useState<number>(50);
+  const [currentPage, setCurrentPage] = React.useState(1);
+
+  // Password change state
+  const [currentPassword, setCurrentPassword] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [passwordChanging, setPasswordChanging] = React.useState(false);
 
   // Form state
   const [title, setTitle] = React.useState("");
@@ -79,6 +87,23 @@ export default function AdminEditor() {
     });
   }, [sessions, fromDate, toDate]);
 
+  // Paginate filtered sessions
+  const paginatedSessions = React.useMemo(() => {
+    if (pageSize === 0) return filteredSessions; // Show all
+    const start = (currentPage - 1) * pageSize;
+    return filteredSessions.slice(start, start + pageSize);
+  }, [filteredSessions, currentPage, pageSize]);
+
+  const totalPages = React.useMemo(() => {
+    if (pageSize === 0) return 1;
+    return Math.ceil(filteredSessions.length / pageSize);
+  }, [filteredSessions.length, pageSize]);
+
+  // Reset to page 1 when filters or page size change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [fromDate, toDate, pageSize]);
+
   // Only sync innerHTML when loading a post for editing
   React.useEffect(() => {
     if (editingPostId && contentRef.current && content) {
@@ -115,21 +140,18 @@ export default function AdminEditor() {
     return <div className="min-h-screen bg-slate-950" />;
   }
 
-  // Format date for display
+  // Format date for display - compact timestamp
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+    }) + ' ' + date.toLocaleTimeString('en-US', {
       hour: 'numeric',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true
     });
-  };
-
-  // Get preview of transcript
-  const getPreview = (transcript: string) => {
-    const lines = transcript.split('\n').filter(line => line.trim());
-    return lines.slice(0, 3).join(' ').substring(0, 150) + '...';
   };
 
   // Download single transcript
@@ -183,6 +205,69 @@ export default function AdminEditor() {
       title: "Download Started",
       description: `Downloading ${filteredSessions.length} transcript(s).`,
     });
+  };
+
+  // Handle password change
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords Don't Match",
+        description: "New password and confirmation must match.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "New password must be at least 6 characters.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setPasswordChanging(true);
+    
+    try {
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: "hkborah@gmail.com",
+          currentPassword,
+          newPassword
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Password Changed",
+          description: "Your password has been updated successfully.",
+        });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to change password.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to change password. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setPasswordChanging(false);
+    }
   };
 
   const validateImageDimensions = (file: File): Promise<boolean> => {
@@ -441,6 +526,9 @@ export default function AdminEditor() {
               </TabsTrigger>
               <TabsTrigger value="transcripts" className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 gap-2">
                 <MessageSquare className="h-4 w-4" /> Transcripts
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 gap-2">
+                <Settings className="h-4 w-4" /> Settings
               </TabsTrigger>
             </TabsList>
 
@@ -704,48 +792,67 @@ export default function AdminEditor() {
             </TabsContent>
 
             <TabsContent value="transcripts">
-              <div className="space-y-6">
-                {/* Date Filters and Bulk Download */}
-                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-6">
-                  <div className="flex flex-wrap items-end gap-4">
-                    <div className="flex-1 min-w-[200px]">
-                      <Label className="text-slate-400 text-sm mb-2 block">From Date</Label>
+              <div className="space-y-4">
+                {/* Filters Bar */}
+                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-4">
+                  <div className="flex flex-wrap items-center gap-4">
+                    {/* Page Size Filter */}
+                    <div className="flex items-center gap-2">
+                      <Label className="text-slate-400 text-xs">Show:</Label>
+                      <div className="flex gap-1">
+                        {[50, 100, 200, 0].map((size) => (
+                          <button
+                            key={size}
+                            onClick={() => setPageSize(size)}
+                            className={`px-2 py-1 text-xs rounded ${pageSize === size ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                          >
+                            {size === 0 ? 'All' : size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="h-4 w-px bg-slate-700" />
+                    {/* Date Filters */}
+                    <div className="flex items-center gap-2">
+                      <Label className="text-slate-400 text-xs">From:</Label>
                       <Input
                         type="date"
                         value={fromDate}
                         onChange={(e) => setFromDate(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-slate-200"
+                        className="bg-slate-950 border-slate-800 text-slate-200 h-8 text-xs w-36"
                       />
                     </div>
-                    <div className="flex-1 min-w-[200px]">
-                      <Label className="text-slate-400 text-sm mb-2 block">To Date</Label>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-slate-400 text-xs">To:</Label>
                       <Input
                         type="date"
                         value={toDate}
                         onChange={(e) => setToDate(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-slate-200"
+                        className="bg-slate-950 border-slate-800 text-slate-200 h-8 text-xs w-36"
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="border-slate-700 text-slate-300 hover:bg-slate-800"
-                        onClick={() => { setFromDate(""); setToDate(""); }}
-                      >
-                        Clear
-                      </Button>
-                      <Button
-                        className="bg-amber-500 hover:bg-amber-600 text-slate-950 gap-2"
-                        onClick={bulkDownloadTranscripts}
-                      >
-                        <Download className="h-4 w-4" />
-                        Download {filteredSessions.length > 0 ? `(${filteredSessions.length})` : "All"}
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-400 hover:text-slate-300 text-xs h-8"
+                      onClick={() => { setFromDate(""); setToDate(""); }}
+                    >
+                      Clear
+                    </Button>
+                    <div className="flex-1" />
+                    {/* Bulk Download */}
+                    <Button
+                      size="sm"
+                      className="bg-amber-500 hover:bg-amber-600 text-slate-950 gap-2 h-8"
+                      onClick={bulkDownloadTranscripts}
+                    >
+                      <Download className="h-3 w-3" />
+                      Download ({filteredSessions.length})
+                    </Button>
                   </div>
                 </div>
 
-                {/* Sessions List */}
+                {/* Split View: List + Preview */}
                 {transcriptsLoading ? (
                   <div className="text-center py-12">
                     <p className="text-slate-400">Loading transcripts...</p>
@@ -759,58 +866,157 @@ export default function AdminEditor() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {filteredSessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className="bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 transition-colors"
-                      >
-                        <div 
-                          className="p-6 cursor-pointer"
-                          onClick={() => setExpandedId(expandedId === session.id ? null : session.id)}
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 text-xs font-mono text-slate-500 mb-2">
-                                <Calendar className="h-3 w-3" />
-                                {formatDate(session.createdAt)}
-                              </div>
-                              <p className="text-slate-300 text-sm font-light">
-                                {getPreview(session.transcript)}
-                              </p>
+                  <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4 min-h-[500px]">
+                    {/* Compact List */}
+                    <div className="bg-slate-900/30 border border-slate-800 rounded-lg overflow-hidden">
+                      <div className="p-3 border-b border-slate-800 bg-slate-900/50">
+                        <span className="text-xs font-mono text-slate-400">
+                          {pageSize === 0 ? `Showing all ${filteredSessions.length}` : `Page ${currentPage} of ${totalPages} (${filteredSessions.length} total)`}
+                        </span>
+                      </div>
+                      <div className="max-h-[450px] overflow-y-auto">
+                        {paginatedSessions.map((session) => (
+                          <div
+                            key={session.id}
+                            onClick={() => setSelectedSession(session)}
+                            className={`px-3 py-2 cursor-pointer border-b border-slate-800/50 hover:bg-slate-800/50 transition-colors flex items-center justify-between ${selectedSession?.id === session.id ? 'bg-amber-500/10 border-l-2 border-l-amber-500' : ''}`}
+                          >
+                            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+                              <Calendar className="h-3 w-3 flex-shrink-0" />
+                              <span className={selectedSession?.id === session.id ? 'text-amber-500' : ''}>{formatDate(session.createdAt)}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-amber-500"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  downloadTranscript(session);
-                                }}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              {expandedId === session.id ? (
-                                <ChevronUp className="h-5 w-5 text-slate-500" />
-                              ) : (
-                                <ChevronDown className="h-5 w-5 text-slate-500" />
-                              )}
-                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 opacity-50 hover:opacity-100 text-slate-400 hover:text-amber-500"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                downloadTranscript(session);
+                              }}
+                            >
+                              <Download className="h-3 w-3" />
+                            </Button>
                           </div>
+                        ))}
+                      </div>
+                      {/* Pagination Controls */}
+                      {pageSize > 0 && totalPages > 1 && (
+                        <div className="p-3 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(p => p - 1)}
+                            className="text-slate-400 hover:text-slate-200 h-7 text-xs"
+                          >
+                            Previous
+                          </Button>
+                          <span className="text-xs text-slate-500">{currentPage} / {totalPages}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(p => p + 1)}
+                            className="text-slate-400 hover:text-slate-200 h-7 text-xs"
+                          >
+                            Next
+                          </Button>
                         </div>
-                        
-                        {expandedId === session.id && (
-                          <div className="px-6 pb-6 border-t border-slate-800 pt-4">
-                            <pre className="text-slate-300 text-sm font-light whitespace-pre-wrap bg-slate-950 p-4 rounded-lg max-h-96 overflow-auto">
-                              {session.transcript}
+                      )}
+                    </div>
+
+                    {/* Preview Panel */}
+                    <div className="bg-slate-900/30 border border-slate-800 rounded-lg overflow-hidden">
+                      {selectedSession ? (
+                        <>
+                          <div className="p-3 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
+                            <span className="text-xs font-mono text-amber-500">{formatDate(selectedSession.createdAt)}</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-amber-500 h-7 text-xs gap-1"
+                              onClick={() => downloadTranscript(selectedSession)}
+                            >
+                              <Download className="h-3 w-3" /> Download
+                            </Button>
+                          </div>
+                          <div className="p-4 max-h-[450px] overflow-y-auto">
+                            <pre className="text-slate-300 text-sm font-light whitespace-pre-wrap leading-relaxed">
+                              {selectedSession.transcript}
                             </pre>
                           </div>
-                        )}
-                      </div>
-                    ))}
+                        </>
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-slate-500 text-sm">
+                          Select a transcript to preview
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <div className="max-w-md mx-auto">
+                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                      <Lock className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-serif font-bold text-slate-100">Change Password</h2>
+                      <p className="text-xs text-slate-500">Account: hkborah@gmail.com</p>
+                    </div>
+                  </div>
+                  
+                  <form onSubmit={handlePasswordChange} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-400 text-sm">Current Password</Label>
+                      <Input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter current password"
+                        className="bg-slate-950 border-slate-800 text-slate-200"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-slate-400 text-sm">New Password</Label>
+                      <Input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password (min 6 chars)"
+                        className="bg-slate-950 border-slate-800 text-slate-200"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-slate-400 text-sm">Confirm New Password</Label>
+                      <Input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        className="bg-slate-950 border-slate-800 text-slate-200"
+                        required
+                      />
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 mt-6"
+                      disabled={passwordChanging || !currentPassword || !newPassword || !confirmPassword}
+                    >
+                      {passwordChanging ? "Changing..." : "Change Password"}
+                    </Button>
+                  </form>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
