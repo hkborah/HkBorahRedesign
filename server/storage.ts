@@ -12,6 +12,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   saveChatSession(transcript: string): Promise<ChatSession>;
+  getAllChatSessions(): Promise<ChatSession[]>;
+  getChatSession(id: string): Promise<ChatSession | undefined>;
   getAllBlogPosts(): Promise<BlogPost[]>;
   getBlogPost(id: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
@@ -50,6 +52,20 @@ export class DrizzleStorage implements IStorage {
       transcript,
     }).returning();
     return result[0];
+  }
+
+  async getAllChatSessions(): Promise<ChatSession[]> {
+    const sessions = await db.query.chatSessions.findMany({
+      orderBy: (chatSessions, { desc }) => [desc(chatSessions.createdAt)],
+    });
+    return sessions;
+  }
+
+  async getChatSession(id: string): Promise<ChatSession | undefined> {
+    const result = await db.query.chatSessions.findFirst({
+      where: eq(schema.chatSessions.id, id),
+    });
+    return result;
   }
 
   async getAllBlogPosts(): Promise<BlogPost[]> {

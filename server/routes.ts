@@ -119,6 +119,31 @@ export async function registerRoutes(
     }
   });
 
+  // --- Chat Session Routes ---
+
+  app.get("/api/chat/sessions", async (req, res) => {
+    try {
+      const sessions = await storage.getAllChatSessions();
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching chat sessions:", error);
+      res.status(500).json({ error: "Failed to fetch chat sessions" });
+    }
+  });
+
+  app.get("/api/chat/sessions/:id", async (req, res) => {
+    try {
+      const session = await storage.getChatSession(req.params.id);
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      res.json(session);
+    } catch (error) {
+      console.error("Error fetching chat session:", error);
+      res.status(500).json({ error: "Failed to fetch chat session" });
+    }
+  });
+
   // --- Blog Routes ---
 
   app.get("/api/blog/posts", async (req, res) => {
