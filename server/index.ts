@@ -1,15 +1,25 @@
 import express, { type Request, Response, NextFunction } from "express";
-// Add explicit .ts extensions to fix module resolution errors in tsx/ESM
-import { registerRoutes } from "./routes.ts"; 
-import { setupVite, serveStatic } from "./vite.ts"; 
+import { registerRoutes } from "./routes";
+import { setupVite } from "./vite"; 
 import cors from "cors";
+import { createServer } from "http";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Simple logging helper
+function log(message: string) {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [express] ${message}`);
+}
+
 // Configure CORS to allow requests from your domains
-// This is critical for your deployed site (hkborah.com) to talk to the backend
 app.use(cors({
   origin: [
     "https://hkborah.com",
@@ -49,7 +59,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      console.log(logLine);
+      log(logLine);
     }
   });
 
@@ -57,7 +67,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  const httpServer = createServer(app);
+  const server = await registerRoutes(app, httpServer);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -71,19 +82,17 @@ app.use((req, res, next) => {
   // setting up all the other routes so the index.html under
   // public is overwritten by react-router-dom router
   if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    await setupVite(httpServer, app);
   }
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client
   const port = 5000;
-  server.listen({
+  httpServer.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    console.log(`serving on port ${port}`);
+    log(`serving on port ${port}`);
   });
 })();
