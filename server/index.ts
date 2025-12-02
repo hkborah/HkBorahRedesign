@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 // Add explicit .ts extensions to fix module resolution errors in tsx/ESM
 import { registerRoutes } from "./routes.ts"; 
-import { setupVite, serveStatic, log } from "./vite.ts"; 
+import { setupVite, serveStatic } from "./vite.ts"; 
 import cors from "cors";
 
 const app = express();
@@ -49,7 +49,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      console.log(logLine);
     }
   });
 
@@ -84,6 +84,6 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    console.log(`serving on port ${port}`);
   });
 })();
