@@ -92,39 +92,55 @@ export default function AdminEditor() {
     }
   };
 
-  const applyFormatting = (command: string, value?: string) => {
-    // Save the current selection before anything happens
+  // Store selection globally so it persists across button clicks
+  const savedSelectionRef = React.useRef<Range | null>(null);
+  
+  // Save selection whenever user makes one in the editor
+  const saveSelection = () => {
     const selection = window.getSelection();
-    let savedRange: Range | null = null;
-    
     if (selection && selection.rangeCount > 0) {
-      savedRange = selection.getRangeAt(0).cloneRange();
+      const range = selection.getRangeAt(0);
+      // Only save if selection is within our editor
+      if (contentRef.current?.contains(range.commonAncestorContainer)) {
+        savedSelectionRef.current = range.cloneRange();
+      }
     }
-    
-    // Focus the editor
-    contentRef.current?.focus();
-    
-    // Restore the selection
-    if (savedRange && selection) {
+  };
+  
+  const restoreSelection = () => {
+    const selection = window.getSelection();
+    if (savedSelectionRef.current && selection) {
       try {
         selection.removeAllRanges();
-        selection.addRange(savedRange);
+        selection.addRange(savedSelectionRef.current);
+        return true;
       } catch (e) {
         console.error('Failed to restore selection:', e);
       }
     }
+    return false;
+  };
+
+  const applyFormatting = (command: string, value?: string) => {
+    // Focus the editor first
+    contentRef.current?.focus();
     
-    // Now apply the command with the selection in place
-    try {
-      document.execCommand(command, false, value);
-    } catch (e) {
-      console.error('Format command failed:', e);
-    }
+    // Restore saved selection
+    restoreSelection();
     
-    // Update content state
-    if (contentRef.current) {
-      setContent(contentRef.current.innerHTML);
-    }
+    // Small delay to ensure selection is restored before command
+    requestAnimationFrame(() => {
+      try {
+        document.execCommand(command, false, value);
+      } catch (e) {
+        console.error('Format command failed:', e);
+      }
+      
+      // Update content state
+      if (contentRef.current) {
+        setContent(contentRef.current.innerHTML);
+      }
+    });
   };
 
   const handleContentChange = () => {
@@ -441,7 +457,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', 'h1'); }}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', '<h1>'); }}
                                   title="Heading 1"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -451,7 +467,7 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', 'h2'); }}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', '<h2>'); }}
                                   title="Heading 2"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
@@ -461,11 +477,21 @@ export default function AdminEditor() {
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', 'h3'); }}
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', '<h3>'); }}
                                   title="Heading 3"
                                   className="h-8 w-8 p-0 hover:bg-slate-800"
                                 >
                                   <Heading3 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('formatBlock', '<p>'); }}
+                                  title="Normal Text"
+                                  className="h-8 px-2 hover:bg-slate-800 text-xs"
+                                >
+                                  P
                                 </Button>
                                 <div className="w-px bg-slate-700"></div>
                                 <Button
@@ -502,13 +528,27 @@ export default function AdminEditor() {
                               </div>
                             </div>
                             <div className="relative">
+                              <style>{`
+                                .wysiwyg-editor h1 { font-size: 2rem; font-weight: 700; margin: 1rem 0; font-family: serif; }
+                                .wysiwyg-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 0.875rem 0; font-family: serif; }
+                                .wysiwyg-editor h3 { font-size: 1.25rem; font-weight: 600; margin: 0.75rem 0; font-family: serif; }
+                                .wysiwyg-editor p { margin: 0.5rem 0; }
+                                .wysiwyg-editor ul, .wysiwyg-editor ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+                                .wysiwyg-editor li { margin: 0.25rem 0; }
+                                .wysiwyg-editor b, .wysiwyg-editor strong { font-weight: 700; }
+                                .wysiwyg-editor i, .wysiwyg-editor em { font-style: italic; }
+                                .wysiwyg-editor u { text-decoration: underline; }
+                              `}</style>
                               <div 
                                   ref={contentRef}
                                   contentEditable
                                   onInput={handleContentChange}
                                   onPaste={handlePaste}
+                                  onSelect={saveSelection}
+                                  onMouseUp={saveSelection}
+                                  onKeyUp={saveSelection}
                                   suppressContentEditableWarning
-                                  className="bg-slate-950 border border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed p-4 rounded overflow-auto focus:outline-none focus:border-amber-500/30 w-full"
+                                  className="wysiwyg-editor bg-slate-950 border border-slate-800 text-slate-200 min-h-[300px] font-light leading-relaxed p-4 rounded overflow-auto focus:outline-none focus:border-amber-500/30 w-full"
                                   style={{ wordWrap: 'break-word', overflowWrap: 'break-word', maxWidth: '100%', whiteSpace: 'pre-wrap' }}
                               />
                               {content === '' && (
