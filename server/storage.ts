@@ -85,6 +85,30 @@ export class DrizzleStorage implements IStorage {
     return result;
   }
 
+  async deleteChatSession(id: string): Promise<boolean> {
+    const result = await db.delete(schema.chatSessions)
+      .where(eq(schema.chatSessions.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async deleteChatSessions(ids: string[]): Promise<number> {
+    if (ids.length === 0) return 0;
+    let deleted = 0;
+    for (const id of ids) {
+      const result = await db.delete(schema.chatSessions)
+        .where(eq(schema.chatSessions.id, id))
+        .returning();
+      if (result.length > 0) deleted++;
+    }
+    return deleted;
+  }
+
+  async deleteAllChatSessions(): Promise<number> {
+    const result = await db.delete(schema.chatSessions).returning();
+    return result.length;
+  }
+
   async getAllBlogPosts(): Promise<BlogPost[]> {
     const posts = await db.query.blogPosts.findMany({
       orderBy: (blogPosts, { desc }) => [desc(blogPosts.createdAt)],

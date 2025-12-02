@@ -188,6 +188,43 @@ export async function registerRoutes(
     }
   });
 
+  app.delete("/api/chat/sessions/:id", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const deleted = await storage.deleteChatSession(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting chat session:", error);
+      res.status(500).json({ error: "Failed to delete chat session" });
+    }
+  });
+
+  app.post("/api/chat/sessions/delete-multiple", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ error: "ids must be an array" });
+      }
+      const deleted = await storage.deleteChatSessions(ids);
+      res.json({ success: true, deleted });
+    } catch (error) {
+      console.error("Error deleting chat sessions:", error);
+      res.status(500).json({ error: "Failed to delete chat sessions" });
+    }
+  });
+
+  app.delete("/api/chat/sessions", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const deleted = await storage.deleteAllChatSessions();
+      res.json({ success: true, deleted });
+    } catch (error) {
+      console.error("Error deleting all chat sessions:", error);
+      res.status(500).json({ error: "Failed to delete all chat sessions" });
+    }
+  });
+
   // --- Blog Routes ---
 
   app.get("/api/blog/posts", async (req, res) => {
