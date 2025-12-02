@@ -13,6 +13,7 @@ interface Message {
   content: string;
 }
 
+// Targeting your working Cloud Run backend
 const CHAT_API = "https://chatwithhk-6toeltovya-uc.a.run.app";
 
 export function DigitalTwin() {
@@ -31,7 +32,7 @@ export function DigitalTwin() {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    
+
     const userMsg = { role: "user", content: input.trim() };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
@@ -48,7 +49,7 @@ export function DigitalTwin() {
       });
 
       if (!response.ok) throw new Error('Network error');
-      
+
       const data = await response.json();
       setMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
     } catch (error) {
@@ -73,6 +74,8 @@ export function DigitalTwin() {
     }
 
     setIsSaving(true);
+
+    // 1. Prepare content for local download
     const textContent = messages
       .map(msg => {
         const role = msg.role === 'user' ? 'YOU' : 'HK BORAH';
@@ -81,12 +84,25 @@ export function DigitalTwin() {
       .join('\n\n---\n\n');
 
     try {
-      await fetch('/api/chat/save', {
+      // 2. Send to Server (Silent Drive Upload)
+      // We await this to ensure it actually saves to the backend/Drive first
+      const response = await fetch(`${CHAT_API}/api/chat/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages })
       });
 
+      if (!response.ok) {
+        console.error("Server save failed:", response.statusText);
+        // We don't throw here to ensure local download still happens
+      } else {
+        const data = await response.json();
+        if (!data.googleDrive) {
+            console.warn("Google Drive upload may have failed internally.");
+        }
+      }
+
+      // 3. Trigger Local Download (User confirmation action)
       const blob = new Blob([textContent], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -97,17 +113,39 @@ export function DigitalTwin() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
+      // 4. Show User-Facing Success Message
       toast({
         title: "Chat Saved",
-        description: "Your transcript has been downloaded."
+        description: "Your transcript has been saved.", // Generic message covering both
+        variant: "default"
       });
+
     } catch (error) {
       console.error("Save error:", error);
-      toast({
-        title: "Save Failed",
-        description: "Could not save chat.",
-        variant: "destructive"
-      });
+      // Fallback: Try local download even if network failed
+      try {
+          const blob = new Blob([textContent], { type: 'text/plain' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `HK_Borah_Chat_${new Date().toISOString().slice(0,10)}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+
+           toast({
+            title: "Chat Saved Locally",
+            description: "Server save failed, but local copy downloaded.",
+            variant: "default" 
+          });
+      } catch (e) {
+          toast({
+            title: "Save Failed",
+            description: "Could not save chat.",
+            variant: "destructive"
+          });
+      }
     } finally {
       setIsSaving(false);
     }
@@ -141,7 +179,7 @@ export function DigitalTwin() {
                       <span className="text-xs font-serif font-bold text-amber-500">HK</span>
                     </div>
                   )}
-                  
+
                   <div className={`max-w-[70%] p-4 rounded-lg border ${
                     msg.role === 'assistant' 
                       ? 'bg-slate-900/80 border-slate-800 text-slate-200' 
@@ -160,7 +198,7 @@ export function DigitalTwin() {
                   </div>
                 </motion.div>
               ))}
-              
+
               {isTyping && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -213,7 +251,7 @@ export function DigitalTwin() {
           </Button>
         </div>
       </div>
-      
+
       <div className="px-6 py-3 text-center text-xs font-mono text-slate-500 bg-slate-900/20">
         POWERED BY HK BORAH
       </div>

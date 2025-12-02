@@ -1,38 +1,30 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
-import { createServer } from "http";
+// Add explicit .ts extensions to fix module resolution errors in tsx/ESM
+import { registerRoutes } from "./routes.ts"; 
+import { setupVite, serveStatic, log } from "./vite.ts"; 
+import cors from "cors";
 
 const app = express();
-const httpServer = createServer(app);
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-declare module "http" {
-  interface IncomingMessage {
-    rawBody: unknown;
-  }
-}
-
-app.use(
-  express.json({
-    limit: "50mb",
-    verify: (req, _res, buf) => {
-      req.rawBody = buf;
-    },
-  }),
-);
-
-app.use(express.urlencoded({ limit: "50mb", extended: false }));
-
-export function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  console.log(`${formattedTime} [${source}] ${message}`);
-}
+// Configure CORS to allow requests from your domains
+// This is critical for your deployed site (hkborah.com) to talk to the backend
+app.use(cors({
+  origin: [
+    "https://hkborah.com",
+    "https://www.hkborah.com",
+    "https://hk-borah.web.app",
+    // Allow Replit preview domains for development
+    /https:\/\/.*\.replit\.dev$/,
+    // Allow local development
+    "http://localhost:5000",
+    "http://0.0.0.0:5000"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -53,6 +45,10 @@ app.use((req, res, next) => {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
       log(logLine);
     }
   });
@@ -61,7 +57,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await registerRoutes(httpServer, app);
+  const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -72,28 +68,22 @@ app.use((req, res, next) => {
   });
 
   // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
+  // setting up all the other routes so the index.html under
+  // public is overwritten by react-router-dom router
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
   } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
+    serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client
+  const port = 5000;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
 })();

@@ -4,73 +4,35 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { google } from "googleapis";
 
-// Google Drive integration - based on Replit blueprint
-let connectionSettings: any;
-
-async function getAccessToken() {
-  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
-  }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
-
-  if (!xReplitToken) {
-    console.warn('X_REPLIT_TOKEN not found - Google Drive integration unavailable');
-    return null;
-  }
-
+// Google Drive integration - Standard Google Cloud Auth
+// This matches how your live Cloud Run instance connects to Drive
+async function getGoogleDriveClient() {
   try {
-    connectionSettings = await fetch(
-      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-drive',
-      {
-        headers: {
-          'Accept': 'application/json',
-          'X-Replit-Token': xReplitToken
-        }
-      }
-    ).then(res => res.json()).then(data => data.items?.[0]);
+    // This automatically looks for credentials in your environment
+    // (e.g., GOOGLE_APPLICATION_CREDENTIALS or default service account)
+    const auth = new google.auth.GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/drive'],
+    });
 
-    const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
-
-    if (!connectionSettings || !accessToken) {
-      console.warn('Google Drive not connected');
-      return null;
-    }
-    return accessToken;
-  } catch (err) {
-    console.error('Error getting access token:', err);
+    const authClient = await auth.getClient();
+    return google.drive({ version: 'v3', auth: authClient });
+  } catch (error) {
+    console.error("Google Auth Error:", error);
     return null;
   }
-}
-
-async function getUncachableGoogleDriveClient() {
-  const accessToken = await getAccessToken();
-  if (!accessToken) return null;
-
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: accessToken
-  });
-
-  return google.drive({ version: 'v3', auth: oauth2Client });
 }
 
 async function saveToGoogleDrive(transcript: string, fileName: string) {
   try {
-    const drive = await getUncachableGoogleDriveClient();
+    const drive = await getGoogleDriveClient();
     if (!drive) {
-      console.log('Google Drive not available, saving to database only');
+      console.log('Google Drive not available - Auth failed or credentials missing');
       return null;
     }
 
     // Get or create HK Borah folder
     let folderId: string | null = null;
-    
+
     // Search for folder named "HK Borah Ideas"
     const folderSearch = await drive.files.list({
       q: "name='HK Borah Ideas' and mimeType='application/vnd.google-apps.folder' and trashed=false",
@@ -124,7 +86,7 @@ export async function registerRoutes(
   app.post("/api/chat/save", async (req, res) => {
     try {
       const { messages } = req.body;
-      
+
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Invalid messages" });
       }
@@ -137,10 +99,10 @@ export async function registerRoutes(
         })
         .join("\n\n-------------------\n\n");
 
-      // Save to storage
+      // Save to storage (Database)
       const session = await storage.saveChatSession(transcript);
 
-      // Attempt to save to Google Drive with timestamp to ensure unique files
+      // Save to Google Drive
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
       const fileName = `HK_Borah_Idea_Clinic_${timestamp}.txt`;
       const driveResult = await saveToGoogleDrive(transcript, fileName);
@@ -156,6 +118,8 @@ export async function registerRoutes(
       res.status(500).json({ error: "Failed to save chat" });
     }
   });
+
+  // --- Blog Routes ---
 
   app.get("/api/blog/posts", async (req, res) => {
     try {
