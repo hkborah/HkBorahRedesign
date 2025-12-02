@@ -281,17 +281,21 @@ export async function registerRoutes(
       // Save token to database
       await storage.createPasswordResetToken(email, token, expiresAt);
       
-      // For now, log the reset link (email integration needed for actual sending)
+      // Build reset URL
       const resetUrl = `${req.headers.origin || 'https://hkborah.com'}/reset-password?token=${token}`;
       console.log(`Password reset link for ${email}: ${resetUrl}`);
       
-      // TODO: Send email with resetUrl when email integration is set up
+      // Send email using Resend integration
+      const { sendPasswordResetEmail } = await import("./email");
+      const emailSent = await sendPasswordResetEmail(email, resetUrl);
+      
+      if (!emailSent) {
+        console.error("Failed to send password reset email, but token was created");
+      }
       
       res.json({ 
         success: true, 
-        message: "If an account exists with this email, a reset link will be sent.",
-        // Only include token in development for testing
-        ...(process.env.NODE_ENV === "development" && { resetToken: token, resetUrl })
+        message: "If an account exists with this email, a reset link will be sent."
       });
     } catch (error) {
       console.error("Error requesting password reset:", error);
