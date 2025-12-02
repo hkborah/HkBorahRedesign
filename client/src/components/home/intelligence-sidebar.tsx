@@ -7,6 +7,27 @@ import { BLOG_POSTS } from "@/lib/data";
 // Import images from attached assets
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import bookCoverUrl from "@assets/book-cover-order-of-chaos.png";
+import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
+import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
+import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";
+
+// Map @assets paths to imported images
+const imageAssetMap: Record<string, string> = {
+  "@assets/generated_images/blueprint_architecture_framework_design.png": blueprintImg,
+  "@assets/generated_images/six_sigma_manufacturing_process_flow.png": sixSigmaImg,
+  "@assets/generated_images/strategic_board_meeting_collaboration.png": boardMeetingImg,
+};
+
+// Helper to resolve image path - handles @assets paths, base64, and URLs
+function resolveImagePath(imagePath: string | undefined): string {
+  if (!imagePath) return "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400";
+  if (imagePath.startsWith("data:")) return imagePath; // base64
+  if (imagePath.startsWith("http")) return imagePath; // URL
+  if (imagePath.startsWith("@assets")) {
+    return imageAssetMap[imagePath] || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400";
+  }
+  return imagePath;
+}
 
 export function IntelligenceSidebar() {
   const [posts, setPosts] = React.useState<typeof BLOG_POSTS>([]);
@@ -71,7 +92,7 @@ export function IntelligenceSidebar() {
                 <Link href={`/journal/${post.id}`}>
                   <div className="flex gap-4 items-start hover:bg-slate-900/40 p-2 rounded-lg transition-colors">
                     <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0 bg-slate-800">
-                      <img src={post.image} alt={post.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <img src={resolveImagePath(post.image)} alt={post.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-slate-200 group-hover:text-amber-500 transition-colors line-clamp-2 leading-snug">

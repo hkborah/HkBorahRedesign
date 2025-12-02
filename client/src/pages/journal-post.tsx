@@ -3,10 +3,31 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Share2 } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
+import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
+import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
+import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";
 import NotFound from "@/pages/not-found";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+// Map @assets paths to imported images
+const imageAssetMap: Record<string, string> = {
+  "@assets/generated_images/blueprint_architecture_framework_design.png": blueprintImg,
+  "@assets/generated_images/six_sigma_manufacturing_process_flow.png": sixSigmaImg,
+  "@assets/generated_images/strategic_board_meeting_collaboration.png": boardMeetingImg,
+};
+
+// Helper to resolve image path - handles @assets paths, base64, and URLs
+function resolveImagePath(imagePath: string | undefined): string {
+  if (!imagePath) return "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800";
+  if (imagePath.startsWith("data:")) return imagePath; // base64
+  if (imagePath.startsWith("http")) return imagePath; // URL
+  if (imagePath.startsWith("@assets")) {
+    return imageAssetMap[imagePath] || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800";
+  }
+  return imagePath;
+}
 
 export default function JournalPost() {
   const [, params] = useRoute("/journal/:id");
@@ -66,7 +87,7 @@ export default function JournalPost() {
             </div>
 
             <div className="aspect-video w-full overflow-hidden rounded-lg mb-12 bg-slate-900">
-                <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                <img src={resolveImagePath(post.image)} alt={post.title} className="w-full h-full object-cover" />
             </div>
 
             <div className="prose prose-invert prose-lg prose-slate max-w-none font-light">

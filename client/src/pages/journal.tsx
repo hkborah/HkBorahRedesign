@@ -10,11 +10,23 @@ import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_proces
 import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";
 import { motion } from "framer-motion";
 
-const imageMap: { [key: string]: string } = {
-  "1": blueprintImg,
-  "2": sixSigmaImg,
-  "3": boardMeetingImg,
+// Map @assets paths to imported images
+const imageAssetMap: Record<string, string> = {
+  "@assets/generated_images/blueprint_architecture_framework_design.png": blueprintImg,
+  "@assets/generated_images/six_sigma_manufacturing_process_flow.png": sixSigmaImg,
+  "@assets/generated_images/strategic_board_meeting_collaboration.png": boardMeetingImg,
 };
+
+// Helper to resolve image path - handles @assets paths, base64, and URLs
+function resolveImagePath(imagePath: string | undefined): string {
+  if (!imagePath) return "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800";
+  if (imagePath.startsWith("data:")) return imagePath; // base64
+  if (imagePath.startsWith("http")) return imagePath; // URL
+  if (imagePath.startsWith("@assets")) {
+    return imageAssetMap[imagePath] || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800";
+  }
+  return imagePath;
+}
 
 export default function Journal() {
   const [posts, setPosts] = React.useState<typeof BLOG_POSTS>([]);
@@ -66,8 +78,8 @@ export default function Journal() {
     }
   };
   
-  const getImage = (postId: string) => {
-    return imageMap[postId] || "";
+  const getImage = (post: any) => {
+    return resolveImagePath(post.image);
   };
 
   if (loading) {
@@ -131,7 +143,7 @@ export default function Journal() {
                           <div className="h-64 lg:h-auto overflow-hidden relative">
                               <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition-colors z-10"></div>
                               <img 
-                                  src={getImage(featuredPost.id)} 
+                                  src={getImage(featuredPost)} 
                                   alt={featuredPost.title} 
                                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                               />
@@ -173,7 +185,7 @@ export default function Journal() {
                                 <div className="aspect-video overflow-hidden relative bg-slate-900">
                                     <div className="absolute inset-0 bg-slate-950/10 group-hover:bg-transparent transition-colors z-10"></div>
                                     <img 
-                                        src={getImage(post.id)} 
+                                        src={getImage(post)} 
                                         alt={post.title} 
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                                     />
