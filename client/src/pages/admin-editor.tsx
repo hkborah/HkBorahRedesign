@@ -533,8 +533,9 @@ export default function AdminEditor() {
                                 .wysiwyg-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 0.875rem 0; font-family: serif; }
                                 .wysiwyg-editor h3 { font-size: 1.25rem; font-weight: 600; margin: 0.75rem 0; font-family: serif; }
                                 .wysiwyg-editor p { margin: 0.5rem 0; }
-                                .wysiwyg-editor ul, .wysiwyg-editor ol { margin: 0.5rem 0; padding-left: 1.5rem; }
-                                .wysiwyg-editor li { margin: 0.25rem 0; }
+                                .wysiwyg-editor ul { margin: 0.5rem 0; padding-left: 1.5rem; list-style-type: disc !important; }
+                                .wysiwyg-editor ol { margin: 0.5rem 0; padding-left: 1.5rem; list-style-type: decimal !important; }
+                                .wysiwyg-editor li { margin: 0.25rem 0; display: list-item !important; }
                                 .wysiwyg-editor b, .wysiwyg-editor strong { font-weight: 700; }
                                 .wysiwyg-editor i, .wysiwyg-editor em { font-style: italic; }
                                 .wysiwyg-editor u { text-decoration: underline; }
