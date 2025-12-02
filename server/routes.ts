@@ -1,9 +1,52 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { google } from "googleapis";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
+
+import crypto from "crypto";
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString("hex");
+const isProduction = process.env.NODE_ENV === "production";
+
+interface AuthRequest extends Request {
+  user?: { username: string; id: string };
+}
+
+function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { username: string; id: string };
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid or expired token" });
+  }
+}
+
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: "Too many attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const resetRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: "Too many password reset requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Google Drive integration - Standard Google Cloud Auth
 // This matches how your live Cloud Run instance connects to Drive
@@ -122,7 +165,7 @@ export async function registerRoutes(
 
   // --- Chat Session Routes ---
 
-  app.get("/api/chat/sessions", async (req, res) => {
+  app.get("/api/chat/sessions", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const sessions = await storage.getAllChatSessions();
       res.json(sessions);
@@ -181,7 +224,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/blog/posts", async (req, res) => {
+  app.post("/api/blog/posts", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { title, category, excerpt, content, image, slug, date } = req.body;
       const post = await storage.createBlogPost({
@@ -200,7 +243,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/blog/posts/:id", async (req, res) => {
+  app.put("/api/blog/posts/:id", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { title, category, excerpt, content, image, slug, date } = req.body;
       const post = await storage.updateBlogPost(req.params.id, {
@@ -222,7 +265,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/blog/posts/:id", async (req, res) => {
+  app.delete("/api/blog/posts/:id", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const deleted = await storage.deleteBlogPost(req.params.id);
       if (!deleted) {
@@ -257,8 +300,52 @@ export async function registerRoutes(
     }
   });
 
+  // --- Authentication Routes ---
+  app.post("/api/auth/login", authRateLimiter, async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+      
+      const user = await storage.getUserByUsername(email);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      const isHashed = user.password.startsWith('$2');
+      let passwordValid = false;
+      
+      if (isHashed) {
+        passwordValid = await bcrypt.compare(password, user.password);
+      } else {
+        passwordValid = password === user.password;
+        if (passwordValid) {
+          const hashedPassword = await bcrypt.hash(password, 10);
+          await storage.updateUserPassword(email, hashedPassword);
+        }
+      }
+      
+      if (!passwordValid) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      const token = jwt.sign(
+        { username: user.username, id: user.id },
+        JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+      
+      res.json({ success: true, token });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Authentication failed" });
+    }
+  });
+
   // --- Password Reset Routes ---
-  app.post("/api/auth/forgot-password", async (req, res) => {
+  app.post("/api/auth/forgot-password", resetRateLimiter, async (req, res) => {
     try {
       const { email } = req.body;
       
@@ -274,7 +361,6 @@ export async function registerRoutes(
       }
       
       // Generate reset token (secure random string)
-      const crypto = await import("crypto");
       const token = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
       
@@ -283,7 +369,6 @@ export async function registerRoutes(
       
       // Build reset URL
       const resetUrl = `${req.headers.origin || 'https://hkborah.com'}/reset-password?token=${token}`;
-      console.log(`Password reset link for ${email}: ${resetUrl}`);
       
       // Send email using Resend integration
       const { sendPasswordResetEmail } = await import("./email");
@@ -341,9 +426,10 @@ export async function registerRoutes(
   });
 
   // --- Password Change Route ---
-  app.post("/api/auth/change-password", async (req, res) => {
+  app.post("/api/auth/change-password", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const { username, currentPassword, newPassword } = req.body;
+      const { currentPassword, newPassword } = req.body;
+      const username = req.user?.username;
       
       if (!username || !currentPassword || !newPassword) {
         return res.status(400).json({ error: "Missing required fields" });

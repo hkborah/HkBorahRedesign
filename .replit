@@ -24,10 +24,6 @@ localPort = 33333
 externalPort = 3001
 
 [[ports]]
-localPort = 34335
-externalPort = 3003
-
-[[ports]]
 localPort = 42833
 externalPort = 3002
 
@@ -58,3 +54,8 @@ waitForPort = 5000
 [agent]
 mockupState = "FULLSTACK"
 integrations = ["google-drive:1.0.0", "resend:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "d821adc6c1a03b7f61113e2ca210604bdc2f927fac62d84619c4abb77233306802e810ddd3c9fcc091f41d4630ffea5a34a699f50e8cfb608dc2f44bb68ac2c0"

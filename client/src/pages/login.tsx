@@ -9,11 +9,6 @@ import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 
-const VALID_CREDENTIALS = {
-  email: "hkborah@gmail.com",
-  password: "ScalingFramework2024"
-};
-
 export default function Login() {
   const [, params] = useRoute("/login/:type");
   const title = "Journal Login";
@@ -27,28 +22,42 @@ export default function Login() {
   const [forgotEmail, setForgotEmail] = React.useState("");
   const [isSendingReset, setIsSendingReset] = React.useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Validate credentials
-    setTimeout(() => {
-      setIsLoading(false);
-      if (email === VALID_CREDENTIALS.email && password === VALID_CREDENTIALS.password) {
-        login("editor");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        login("editor", data.token);
         toast({
-            title: "Access Granted",
-            description: `Welcome to the Journal Editor...`,
+          title: "Access Granted",
+          description: `Welcome to the Journal Editor...`,
         });
         navigate("/admin/journal");
       } else {
         toast({
-            title: "Access Denied",
-            description: "Invalid email or password.",
-            variant: "destructive"
+          title: "Access Denied",
+          description: data.error || "Invalid email or password.",
+          variant: "destructive"
         });
       }
-    }, 1500);
+    } catch (error) {
+      toast({
+        title: "Access Denied",
+        description: "Failed to connect. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {

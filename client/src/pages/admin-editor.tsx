@@ -18,7 +18,7 @@ interface ChatSession {
 
 export default function AdminEditor() {
   const { toast } = useToast();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, getAuthHeader } = useAuth();
   const [, navigate] = useLocation();
 
   // All hooks must be declared before any conditional returns
@@ -119,7 +119,9 @@ export default function AdminEditor() {
       const doFetch = async () => {
         setTranscriptsLoading(true);
         try {
-          const response = await fetch("/api/chat/sessions");
+          const response = await fetch("/api/chat/sessions", {
+            headers: { ...getAuthHeader() }
+          });
           if (response.ok) {
             const data = await response.json();
             setSessions(data);
@@ -234,9 +236,8 @@ export default function AdminEditor() {
     try {
       const response = await fetch("/api/auth/change-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeader() },
         body: JSON.stringify({
-          username: "hkborah@gmail.com",
           currentPassword,
           newPassword
         })
@@ -395,12 +396,30 @@ export default function AdminEditor() {
     }
   };
 
-  const handleDeletePost = (postId: string) => {
-    setPosts(posts.filter(p => p.id !== postId));
-    toast({
-      title: "Report Deleted",
-      description: "The intelligence report has been removed from the vault.",
-    });
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const response = await fetch(`/api/blog/posts/${postId}`, {
+        method: "DELETE",
+        headers: { ...getAuthHeader() },
+      });
+      
+      if (response.ok) {
+        setPosts(posts.filter(p => p.id !== postId));
+        toast({
+          title: "Report Deleted",
+          description: "The intelligence report has been removed from the vault.",
+        });
+      } else {
+        throw new Error("Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete report. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handlePublish = async (e: React.FormEvent) => {
@@ -426,7 +445,7 @@ export default function AdminEditor() {
       if (editingPostId) {
         const response = await fetch(`/api/blog/posts/${editingPostId}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeader() },
           body: JSON.stringify(newPost),
         });
         if (response.ok) {
@@ -437,11 +456,13 @@ export default function AdminEditor() {
             description: `"${title}" has been updated in your Archives.`,
           });
           resetForm();
+        } else {
+          throw new Error("Failed to update post");
         }
       } else {
         const response = await fetch("/api/blog/posts", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeader() },
           body: JSON.stringify(newPost),
         });
         if (response.ok) {
@@ -452,6 +473,8 @@ export default function AdminEditor() {
             description: `"${title}" is now visible in your Archives and on the Journal.`,
           });
           resetForm();
+        } else {
+          throw new Error("Failed to create post");
         }
       }
     } catch (error) {

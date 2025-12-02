@@ -106,9 +106,11 @@ export class DrizzleStorage implements IStorage {
 
   async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
     const id = randomUUID();
+    const randomLikes = Math.floor(Math.random() * 21) + 10;
     const result = await db.insert(schema.blogPosts).values({
       id,
       ...insertPost,
+      likes: randomLikes,
     }).returning();
     return result[0];
   }
