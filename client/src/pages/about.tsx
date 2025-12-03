@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Target, Award, Briefcase, GraduationCap } from "lucide-react";
 import { Link } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
+import picoLogo from "/pico-logo-white.png";
+import portraitUrl from "/hkborah-portrait.jpg";
 
 export default function About() {
   return (
@@ -108,14 +110,17 @@ export default function About() {
 
                 <div className="space-y-8">
                     <div className="aspect-[3/4] bg-slate-900 rounded-lg overflow-hidden relative group">
-                        {/* Placeholder for HK Borah Photo - using a generic professional silhouette or pattern for now if no photo provided */}
+                        {/* HK Borah Portrait Photo */}
                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10"></div>
                         <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-600">
-                            <img src="https://www.hkborah.com/images/HKB%20Pinstripe.jpg" alt="HK Borah" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                            <img src={portraitUrl} alt="HK Borah" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                         </div>
                     </div>
 
                     <div className="bg-slate-900/30 border border-slate-800 p-6 rounded-lg space-y-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <img src={picoLogo} alt="PICO" className="h-6 object-contain" />
+                        </div>
                         <h3 className="text-sm font-mono text-amber-500 uppercase tracking-widest">PICO Consulting LLP</h3>
                         <p className="text-sm text-slate-400 font-light">
                             My professional advisory services, corporate case studies, and the work of our elite IIM/IIT team are housed at PICO Consulting LLP.
