@@ -93,7 +93,6 @@ export default function JournalPost() {
             </div>
 
             <div className="prose prose-invert prose-lg prose-slate max-w-none font-light">
-                <p className="lead text-xl text-slate-300 mb-8">{post.excerpt}</p>
                 <style>{`
                   .blog-content p { margin: 1.25rem 0; line-height: 1.8; }
                   .blog-content h1 { font-size: 2rem; font-weight: 700; margin: 2rem 0 1rem; font-family: serif; }
