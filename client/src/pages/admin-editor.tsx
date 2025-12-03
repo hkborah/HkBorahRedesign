@@ -524,12 +524,14 @@ export default function AdminEditor() {
     const range = selection.getRangeAt(0);
     range.deleteContents();
     
-    const temp = document.createElement('div');
-    temp.innerHTML = htmlContent;
+    // Use a document fragment to preserve order when inserting multiple nodes
+    const fragment = document.createRange().createContextualFragment(htmlContent);
+    range.insertNode(fragment);
     
-    while (temp.firstChild) {
-      range.insertNode(temp.firstChild);
-    }
+    // Move cursor to end of pasted content
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
     
     if (contentRef.current) {
       setContent(contentRef.current.innerHTML);
