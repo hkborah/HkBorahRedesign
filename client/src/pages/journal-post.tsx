@@ -93,8 +93,18 @@ export default function JournalPost() {
             </div>
 
             <div className="prose prose-invert prose-lg prose-slate max-w-none font-light">
-                <p className="lead text-xl text-slate-300">{post.excerpt}</p>
-                <div dangerouslySetInnerHTML={{ __html: post.content }} className="prose prose-invert prose-lg max-w-none" />
+                <p className="lead text-xl text-slate-300 mb-8">{post.excerpt}</p>
+                <style>{`
+                  .blog-content p { margin: 1.25rem 0; line-height: 1.8; }
+                  .blog-content h1 { font-size: 2rem; font-weight: 700; margin: 2rem 0 1rem; font-family: serif; }
+                  .blog-content h2 { font-size: 1.5rem; font-weight: 600; margin: 1.75rem 0 0.875rem; font-family: serif; }
+                  .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 0.75rem; font-family: serif; }
+                  .blog-content ul, .blog-content ol { margin: 1.25rem 0; padding-left: 1.5rem; }
+                  .blog-content li { margin: 0.5rem 0; }
+                  .blog-content a { color: #f59e0b; text-decoration: underline; }
+                  .blog-content a:hover { color: #fbbf24; }
+                `}</style>
+                <div dangerouslySetInnerHTML={{ __html: post.content }} className="blog-content prose prose-invert prose-lg max-w-none" />
             </div>
 
             <div className="mt-12 pt-8 border-t border-slate-900 flex justify-between items-center">

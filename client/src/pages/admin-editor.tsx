@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, FileText, MessageSquare, Settings, Lock } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, FileText, MessageSquare, Settings, Lock, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
@@ -496,6 +496,39 @@ export default function AdminEditor() {
     });
   };
 
+  const insertHyperlink = () => {
+    // Focus the editor and restore selection first
+    contentRef.current?.focus();
+    restoreSelection();
+    
+    const selection = window.getSelection();
+    const selectedText = selection?.toString() || '';
+    
+    // Prompt for URL
+    const url = prompt('Enter URL:', 'https://');
+    if (!url || url === 'https://') return;
+    
+    // If no text selected, prompt for link text
+    let linkText = selectedText;
+    if (!linkText) {
+      linkText = prompt('Enter link text:', url) || url;
+    }
+    
+    if (selectedText) {
+      // Wrap selected text in link
+      document.execCommand('createLink', false, url);
+    } else {
+      // Insert new link at cursor
+      const link = `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+      document.execCommand('insertHTML', false, link);
+    }
+    
+    // Update content state
+    if (contentRef.current) {
+      setContent(contentRef.current.innerHTML);
+    }
+  };
+
   const handleContentChange = () => {
     if (contentRef.current) {
       setContent(contentRef.current.innerHTML);
@@ -908,20 +941,74 @@ export default function AdminEditor() {
                                 >
                                   <Outdent className="h-4 w-4" />
                                 </Button>
+                                <div className="w-px bg-slate-700"></div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('justifyLeft'); }}
+                                  title="Align Left"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <AlignLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('justifyCenter'); }}
+                                  title="Align Center"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <AlignCenter className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('justifyRight'); }}
+                                  title="Align Right"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <AlignRight className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onMouseDown={(e) => { e.preventDefault(); applyFormatting('justifyFull'); }}
+                                  title="Justify"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <AlignJustify className="h-4 w-4" />
+                                </Button>
+                                <div className="w-px bg-slate-700"></div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onMouseDown={(e) => { e.preventDefault(); insertHyperlink(); }}
+                                  title="Insert Link"
+                                  className="h-8 w-8 p-0 hover:bg-slate-800"
+                                >
+                                  <Link2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
                             <div className="relative">
                               <style>{`
-                                .wysiwyg-editor h1 { font-size: 2rem; font-weight: 700; margin: 1rem 0; font-family: serif; }
-                                .wysiwyg-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 0.875rem 0; font-family: serif; }
-                                .wysiwyg-editor h3 { font-size: 1.25rem; font-weight: 600; margin: 0.75rem 0; font-family: serif; }
-                                .wysiwyg-editor p { margin: 0.5rem 0; }
-                                .wysiwyg-editor ul { margin: 0.5rem 0; padding-left: 1.5rem; list-style-type: disc !important; }
-                                .wysiwyg-editor ol { margin: 0.5rem 0; padding-left: 1.5rem; list-style-type: decimal !important; }
-                                .wysiwyg-editor li { margin: 0.25rem 0; display: list-item !important; }
+                                .wysiwyg-editor h1 { font-size: 2rem; font-weight: 700; margin: 1.5rem 0; font-family: serif; }
+                                .wysiwyg-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 1.25rem 0; font-family: serif; }
+                                .wysiwyg-editor h3 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0; font-family: serif; }
+                                .wysiwyg-editor p { margin: 1rem 0; line-height: 1.75; }
+                                .wysiwyg-editor ul { margin: 1rem 0; padding-left: 1.5rem; list-style-type: disc !important; }
+                                .wysiwyg-editor ol { margin: 1rem 0; padding-left: 1.5rem; list-style-type: decimal !important; }
+                                .wysiwyg-editor li { margin: 0.5rem 0; display: list-item !important; }
                                 .wysiwyg-editor b, .wysiwyg-editor strong { font-weight: 700; }
                                 .wysiwyg-editor i, .wysiwyg-editor em { font-style: italic; }
                                 .wysiwyg-editor u { text-decoration: underline; }
+                                .wysiwyg-editor a { color: #f59e0b; text-decoration: underline; }
+                                .wysiwyg-editor a:hover { color: #fbbf24; }
                               `}</style>
                               <div 
                                   ref={contentRef}
