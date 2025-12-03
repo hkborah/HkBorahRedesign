@@ -98,8 +98,9 @@ export default function JournalPost() {
                   .blog-content h1 { font-size: 2rem; font-weight: 700; margin: 2rem 0 1rem; font-family: serif; }
                   .blog-content h2 { font-size: 1.5rem; font-weight: 600; margin: 1.75rem 0 0.875rem; font-family: serif; }
                   .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 0.75rem; font-family: serif; }
-                  .blog-content ul, .blog-content ol { margin: 1.25rem 0; padding-left: 1.5rem; }
-                  .blog-content li { margin: 0.5rem 0; }
+                  .blog-content ul { margin: 1.25rem 0; padding-left: 1.5rem; list-style-type: disc !important; }
+                  .blog-content ol { margin: 1.25rem 0; padding-left: 1.5rem; list-style-type: decimal !important; }
+                  .blog-content li { margin: 0.5rem 0; display: list-item !important; }
                   .blog-content a { color: #f59e0b; text-decoration: underline; }
                   .blog-content a:hover { color: #fbbf24; }
                 `}</style>
