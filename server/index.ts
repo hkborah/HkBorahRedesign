@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import cors from "cors";
 import { createServer } from "http";
+import path from "path";
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -83,6 +84,22 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     const { setupVite } = await import("./vite");
     await setupVite(app, httpServer);
+  } else {
+    // In production, serve static files from dist/public
+    const distPath = path.resolve(process.cwd(), "dist", "public");
+    app.use(express.static(distPath));
+    
+    // Handle client-side routing - serve index.html for all non-API routes
+    // Skip API routes and static assets (files with extensions)
+    app.get("*", (req, res) => {
+      const reqPath = req.path;
+      // Don't serve index.html for API routes or files with extensions
+      if (reqPath.startsWith("/api") || reqPath.includes(".")) {
+        res.status(404).send("Not found");
+        return;
+      }
+      res.sendFile(path.join(distPath, "index.html"));
+    });
   }
 
   // ALWAYS serve the app on port 5000
