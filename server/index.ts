@@ -1,6 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite } from "./vite"; 
 import cors from "cors";
 import { createServer } from "http";
 
@@ -82,6 +81,7 @@ app.use((req, res, next) => {
   // setting up all the other routes so the index.html under
   // public is overwritten by react-router-dom router
   if (app.get("env") === "development") {
+    const { setupVite } = await import("./vite");
     await setupVite(app, httpServer);
   }
 
