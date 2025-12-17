@@ -125,7 +125,7 @@ export default function About() {
                         <p className="text-sm text-slate-400 font-light">
                             My professional advisory services, corporate case studies, and the work of our elite IIM/IIT team are housed at PICO Consulting LLP.
                         </p>
-                        <a href="https://www.thepico.org/" target="_blank" rel="noreferrer">
+                        <a href="https://www.thepico.in/" target="_blank" rel="noreferrer">
                             <Button variant="outline" className="w-full border-slate-700 text-slate-300 hover:text-amber-500 hover:border-amber-500">
                                 Explore PICO Consulting
                             </Button>
