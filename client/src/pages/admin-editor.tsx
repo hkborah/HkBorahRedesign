@@ -1255,7 +1255,7 @@ export default function AdminEditor() {
                     </div>
                     <div>
                       <h2 className="text-xl font-serif font-bold text-slate-100">Change Password</h2>
-                      <p className="text-xs text-slate-500">Account: hkborah@gmail.com</p>
+                      <p className="text-xs text-slate-500">Account: hkborah@thepico.in</p>
                     </div>
                   </div>
                   

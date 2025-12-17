@@ -137,7 +137,7 @@ export default function About() {
                         <div className="space-y-2 text-sm">
                              <p className="text-slate-300 flex justify-between">
                                 <span className="text-slate-500">Email</span>
-                                <a href="mailto:hkborah@gmail.com" className="hover:text-amber-500 transition-colors">hkborah@gmail.com</a>
+                                <a href="mailto:hkborah@thepico.in" className="hover:text-amber-500 transition-colors">hkborah@thepico.in</a>
                              </p>
                              <p className="text-slate-300 flex justify-between">
                                 <span className="text-slate-500">LinkedIn</span>

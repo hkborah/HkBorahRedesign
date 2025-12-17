@@ -89,7 +89,7 @@ export function VaultMenu({ isOpen, onClose }: VaultMenuProps) {
                 <div className="space-y-6">
                   <h3 className="text-xs font-mono text-slate-500 uppercase tracking-widest">Contact Protocol</h3>
                   <div className="flex flex-col space-y-3">
-                    <a href="mailto:hkborah@gmail.com" className="text-slate-300 hover:text-amber-500 flex items-center gap-2 transition-colors">
+                    <a href="mailto:hkborah@thepico.in" className="text-slate-300 hover:text-amber-500 flex items-center gap-2 transition-colors">
                       <Send className="h-4 w-4" />
                       <span>Email</span>
                     </a>
