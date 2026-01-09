@@ -8,59 +8,59 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
 function formatAnswer(text: string): string {
-  const lines = text.split('\n');
-  const formattedLines: string[] = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
-    
-    if (line.startsWith('**') && line.includes(':**')) {
-      const headerText = line.replace(/\*\*/g, '').replace(/:$/, '');
-      formattedLines.push(`<u class="underline decoration-amber-500/50 underline-offset-4 text-amber-400 font-semibold no-underline">${headerText}</u>\n`);
-      formattedLines.push('');
-    } else if (line.startsWith('•')) {
-      const bulletContent = line.substring(1).trim();
-      const colonIndex = bulletContent.indexOf(':');
-      
-      if (colonIndex > 0 && colonIndex < 60) {
-        const subHeader = bulletContent.substring(0, colonIndex);
-        let description = bulletContent.substring(colonIndex + 1).trim();
-        
-        const numberedPattern = /(\d+)\)\s+([^,]+?)(?:,\s*(?=\d+\))|\s*$)/g;
-        const hasNumberedItems = /\d+\)\s+/.test(description);
-        
-        if (hasNumberedItems) {
-          const parts = description.split(/(?=\d+\)\s+)/);
-          const mainText = parts[0].trim();
-          const numberedItems: string[] = [];
-          
-          for (let j = 1; j < parts.length; j++) {
-            const item = parts[j].replace(/^(\d+)\)\s*/, '').replace(/,\s*$/, '').trim();
-            if (item) {
-              numberedItems.push(`   ${j}. ${item}`);
-            }
-          }
-          
-          if (numberedItems.length > 0) {
-            formattedLines.push(`- **${subHeader}:** ${mainText}`);
-            formattedLines.push('');
-            numberedItems.forEach(item => formattedLines.push(item));
-            formattedLines.push('');
-          } else {
-            formattedLines.push(`- **${subHeader}:** ${description}`);
-          }
-        } else {
-          formattedLines.push(`- **${subHeader}:** ${description}`);
-        }
-      } else {
-        formattedLines.push(`- ${bulletContent}`);
-      }
-    } else {
-      formattedLines.push(line);
+  const lines = text.split("\n");
+  const output: string[] = [];
+  const stepRegex = /(\d+)\)\s*(.*?)(?=(?:,\s+\d+\))|$)/g;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    if (/^\*\*.+:\*\*$/.test(line)) {
+      const header = line.replace(/^\*\*|\*\*$/g, "").replace(/:$/, "").trim();
+      output.push(`<u class="underline decoration-amber-500/50 underline-offset-4 text-amber-400 font-semibold block mb-4">${header}</u>`);
+      output.push("");
+      continue;
     }
+
+    if (line.startsWith("•")) {
+      const withoutBullet = line.slice(1).trim();
+      const colonIdx = withoutBullet.indexOf(":");
+      if (colonIdx === -1) {
+        output.push(`- ${withoutBullet}`);
+        continue;
+      }
+
+      const subHeader = withoutBullet.slice(0, colonIdx).trim();
+      const remainder = withoutBullet.slice(colonIdx + 1).trim();
+
+      const steps: { num: string; text: string }[] = [];
+      let preamble = remainder;
+      let match: RegExpExecArray | null;
+      while ((match = stepRegex.exec(remainder))) {
+        if (steps.length === 0) {
+          preamble = remainder.slice(0, match.index).trim().replace(/[:;,]$/, "");
+        }
+        steps.push({
+          num: match[1],
+          text: match[2].replace(/,\s*$/, "").trim(),
+        });
+      }
+      stepRegex.lastIndex = 0;
+
+      output.push(`- **${subHeader}:** ${preamble}`.trim());
+      if (steps.length) {
+        steps.forEach(step => {
+          output.push(`   ${step.num}. ${step.text}`);
+        });
+      }
+      continue;
+    }
+
+    output.push(line);
   }
-  
-  return formattedLines.join('\n');
+
+  return output.join("\n");
 }
 
 interface CaseFileCodexProps {
