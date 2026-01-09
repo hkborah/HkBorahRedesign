@@ -6,6 +6,35 @@ import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+function formatAnswer(text: string): string {
+  const lines = text.split('\n');
+  const formattedLines: string[] = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    
+    if (line.startsWith('**') && line.includes(':**')) {
+      formattedLines.push(line);
+      formattedLines.push('');
+    } else if (line.startsWith('•')) {
+      const bulletContent = line.substring(1).trim();
+      const colonIndex = bulletContent.indexOf(':');
+      
+      if (colonIndex > 0 && colonIndex < 60) {
+        const subHeader = bulletContent.substring(0, colonIndex);
+        const description = bulletContent.substring(colonIndex + 1).trim();
+        formattedLines.push(`- **${subHeader}:** ${description}`);
+      } else {
+        formattedLines.push(`- ${bulletContent}`);
+      }
+    } else {
+      formattedLines.push(line);
+    }
+  }
+  
+  return formattedLines.join('\n');
+}
+
 interface CaseFileCodexProps {
   entry: CodexEntry;
 }
@@ -140,9 +169,9 @@ export function CaseFileCodex({ entry }: CaseFileCodexProps) {
                                     >
                                       <div className="p-6 space-y-6 text-slate-300 font-light">
                                         {/* Answer */}
-                                        <div className="pl-4 border-l-2 border-amber-500/30 text-slate-300 prose prose-invert prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-strong:text-amber-400">
+                                        <div className="pl-4 border-l-2 border-amber-500/30 text-slate-300 prose prose-invert prose-sm max-w-none prose-p:my-3 prose-ul:my-3 prose-ul:pl-4 prose-li:my-1.5 prose-strong:text-amber-400 prose-strong:font-semibold">
                                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                            {q.a.replace(/•/g, '-')}
+                                            {formatAnswer(q.a)}
                                           </ReactMarkdown>
                                         </div>
 
