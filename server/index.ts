@@ -80,6 +80,10 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // Serve attached_assets at /assets for OG images (both dev and prod)
+  const assetsPath = path.resolve(process.cwd(), "attached_assets");
+  app.use("/assets", express.static(assetsPath));
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the index.html under
   // public is overwritten by react-router-dom router
@@ -102,11 +106,15 @@ app.use((req, res, next) => {
           // Get the base URL for absolute image paths
           const baseUrl = `https://${req.get("host")}`;
           
-          // Handle different image formats (base64, URL, or relative path)
+          // Handle different image formats (base64, URL, @assets path, or relative path)
           let imageUrl = post.image || "";
           if (!imageUrl || imageUrl.startsWith("data:")) {
             // No image or base64 images can't be used for OG tags, use default
             imageUrl = `${baseUrl}/favicon.png`;
+          } else if (imageUrl.startsWith("@assets/")) {
+            // Convert @assets path to public /assets URL
+            const assetPath = imageUrl.replace("@assets/", "");
+            imageUrl = `${baseUrl}/assets/${assetPath}`;
           } else if (!imageUrl.startsWith("http")) {
             imageUrl = `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
           }
