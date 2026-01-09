@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CodexEntry } from "@/lib/data";
 import { ChevronDown, CheckCircle2, Book } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface CaseFileCodexProps {
   entry: CodexEntry;
@@ -138,8 +140,10 @@ export function CaseFileCodex({ entry }: CaseFileCodexProps) {
                                     >
                                       <div className="p-6 space-y-6 text-slate-300 font-light">
                                         {/* Answer */}
-                                        <div className="whitespace-pre-line pl-4 border-l-2 border-amber-500/30 text-slate-300">
-                                          {q.a}
+                                        <div className="pl-4 border-l-2 border-amber-500/30 text-slate-300 prose prose-invert prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-strong:text-amber-400">
+                                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {q.a.replace(/•/g, '-')}
+                                          </ReactMarkdown>
                                         </div>
 
                                         {/* Principle */}
