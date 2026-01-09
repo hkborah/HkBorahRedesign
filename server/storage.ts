@@ -1,11 +1,16 @@
 import { type User, type InsertUser, type ChatSession, type BlogPost, type InsertBlogPost, type PasswordResetToken } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "@shared/schema";
-import { eq, and, gt, sql } from "drizzle-orm";
+import { eq, and, gt, sql, desc } from "drizzle-orm";
+import pkg from "pg";
+const { Pool } = pkg;
 
 // Initialize database connection
-const db = drizzle(process.env.DATABASE_URL!, { schema });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL!,
+});
+const db = drizzle(pool, { schema });
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -32,17 +37,13 @@ export interface IStorage {
 
 export class DrizzleStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.query.users.findFirst({
-      where: eq(schema.users.id, id),
-    });
-    return result;
+    const result = await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1);
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.query.users.findFirst({
-      where: eq(schema.users.username, username),
-    });
-    return result;
+    const result = await db.select().from(schema.users).where(eq(schema.users.username, username)).limit(1);
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -72,17 +73,13 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getAllChatSessions(): Promise<ChatSession[]> {
-    const sessions = await db.query.chatSessions.findMany({
-      orderBy: (chatSessions, { desc }) => [desc(chatSessions.createdAt)],
-    });
+    const sessions = await db.select().from(schema.chatSessions).orderBy(desc(schema.chatSessions.createdAt));
     return sessions;
   }
 
   async getChatSession(id: string): Promise<ChatSession | undefined> {
-    const result = await db.query.chatSessions.findFirst({
-      where: eq(schema.chatSessions.id, id),
-    });
-    return result;
+    const result = await db.select().from(schema.chatSessions).where(eq(schema.chatSessions.id, id)).limit(1);
+    return result[0];
   }
 
   async deleteChatSession(id: string): Promise<boolean> {
@@ -110,25 +107,18 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getAllBlogPosts(): Promise<BlogPost[]> {
-    const posts = await db.query.blogPosts.findMany({
-      orderBy: (blogPosts, { desc }) => [desc(blogPosts.createdAt)],
-    });
+    const posts = await db.select().from(schema.blogPosts).orderBy(desc(schema.blogPosts.createdAt));
     return posts;
   }
 
   async getLatestBlogPosts(limit: number): Promise<BlogPost[]> {
-    const posts = await db.query.blogPosts.findMany({
-      orderBy: (blogPosts, { desc }) => [desc(blogPosts.createdAt)],
-      limit,
-    });
+    const posts = await db.select().from(schema.blogPosts).orderBy(desc(schema.blogPosts.createdAt)).limit(limit);
     return posts;
   }
 
   async getBlogPost(id: string): Promise<BlogPost | undefined> {
-    const result = await db.query.blogPosts.findFirst({
-      where: eq(schema.blogPosts.id, id),
-    });
-    return result;
+    const result = await db.select().from(schema.blogPosts).where(eq(schema.blogPosts.id, id)).limit(1);
+    return result[0];
   }
 
   async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
@@ -176,14 +166,14 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getValidPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
-    const result = await db.query.passwordResetTokens.findFirst({
-      where: and(
+    const result = await db.select().from(schema.passwordResetTokens).where(
+      and(
         eq(schema.passwordResetTokens.token, token),
         eq(schema.passwordResetTokens.used, "false"),
         gt(schema.passwordResetTokens.expiresAt, new Date())
-      ),
-    });
-    return result;
+      )
+    ).limit(1);
+    return result[0];
   }
 
   async markPasswordResetTokenUsed(token: string): Promise<boolean> {
