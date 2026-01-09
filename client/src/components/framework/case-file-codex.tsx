@@ -5,6 +5,7 @@ import { ChevronDown, CheckCircle2, Book } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
 function formatAnswer(text: string): string {
   const lines = text.split('\n');
@@ -14,7 +15,8 @@ function formatAnswer(text: string): string {
     let line = lines[i];
     
     if (line.startsWith('**') && line.includes(':**')) {
-      formattedLines.push(line);
+      const headerText = line.replace(/\*\*/g, '').replace(/:$/, '');
+      formattedLines.push(`<u class="underline decoration-amber-500/50 underline-offset-4 text-amber-400 font-semibold no-underline">${headerText}</u>\n`);
       formattedLines.push('');
     } else if (line.startsWith('•')) {
       const bulletContent = line.substring(1).trim();
@@ -22,8 +24,34 @@ function formatAnswer(text: string): string {
       
       if (colonIndex > 0 && colonIndex < 60) {
         const subHeader = bulletContent.substring(0, colonIndex);
-        const description = bulletContent.substring(colonIndex + 1).trim();
-        formattedLines.push(`- **${subHeader}:** ${description}`);
+        let description = bulletContent.substring(colonIndex + 1).trim();
+        
+        const numberedPattern = /(\d+)\)\s+([^,]+?)(?:,\s*(?=\d+\))|\s*$)/g;
+        const hasNumberedItems = /\d+\)\s+/.test(description);
+        
+        if (hasNumberedItems) {
+          const parts = description.split(/(?=\d+\)\s+)/);
+          const mainText = parts[0].trim();
+          const numberedItems: string[] = [];
+          
+          for (let j = 1; j < parts.length; j++) {
+            const item = parts[j].replace(/^(\d+)\)\s*/, '').replace(/,\s*$/, '').trim();
+            if (item) {
+              numberedItems.push(`   ${j}. ${item}`);
+            }
+          }
+          
+          if (numberedItems.length > 0) {
+            formattedLines.push(`- **${subHeader}:** ${mainText}`);
+            formattedLines.push('');
+            numberedItems.forEach(item => formattedLines.push(item));
+            formattedLines.push('');
+          } else {
+            formattedLines.push(`- **${subHeader}:** ${description}`);
+          }
+        } else {
+          formattedLines.push(`- **${subHeader}:** ${description}`);
+        }
       } else {
         formattedLines.push(`- ${bulletContent}`);
       }
@@ -169,8 +197,8 @@ export function CaseFileCodex({ entry }: CaseFileCodexProps) {
                                     >
                                       <div className="p-6 space-y-6 text-slate-300 font-light">
                                         {/* Answer */}
-                                        <div className="pl-4 border-l-2 border-amber-500/30 text-slate-300 prose prose-invert prose-sm max-w-none prose-p:my-3 prose-ul:my-3 prose-ul:pl-4 prose-li:my-1.5 prose-strong:text-amber-400 prose-strong:font-semibold">
-                                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        <div className="pl-4 border-l-2 border-amber-500/30 text-slate-300 prose prose-invert prose-sm max-w-none prose-p:my-3 prose-ul:my-3 prose-ul:pl-4 prose-li:my-1.5 prose-ol:my-2 prose-ol:pl-6 prose-strong:text-amber-400 prose-strong:font-semibold [&_u]:underline [&_u]:decoration-amber-500/50 [&_u]:underline-offset-4 [&_u]:text-amber-400 [&_u]:font-semibold [&_u]:text-base [&_u]:block [&_u]:mb-4">
+                                          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                                             {formatAnswer(q.a)}
                                           </ReactMarkdown>
                                         </div>
