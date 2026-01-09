@@ -512,5 +512,63 @@ export async function registerRoutes(
     }
   });
 
+  // Admin endpoint to convert base64 images to files for social media sharing
+  app.post("/api/admin/convert-images", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      
+      // Get all blog posts with base64 images
+      const posts = await storage.getBlogPosts();
+      const base64Posts = posts.filter(p => p.image && p.image.startsWith("data:image"));
+      
+      console.log(`Found ${base64Posts.length} posts with base64 images`);
+      
+      const assetsDir = path.default.join(process.cwd(), "attached_assets", "blog_images");
+      if (!fs.default.existsSync(assetsDir)) {
+        fs.default.mkdirSync(assetsDir, { recursive: true });
+      }
+      
+      const converted: string[] = [];
+      
+      for (const post of base64Posts) {
+        const base64Data = post.image!;
+        
+        // Extract mime type and data
+        const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
+        if (!matches) {
+          console.log(`Skipping ${post.id} - invalid format`);
+          continue;
+        }
+        
+        const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
+        const imageData = Buffer.from(matches[2], "base64");
+        
+        // Create filename from post ID
+        const filename = `blog_${post.id.substring(0, 8)}.${ext}`;
+        const filepath = path.default.join(assetsDir, filename);
+        
+        // Save image file
+        fs.default.writeFileSync(filepath, imageData);
+        console.log(`Saved: ${filename}`);
+        
+        // Update database with new path
+        const newImagePath = `@assets/blog_images/${filename}`;
+        await storage.updateBlogPost(post.id, { ...post, image: newImagePath });
+        converted.push(post.title);
+        console.log(`Updated DB: ${post.title.substring(0, 40)}...`);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Converted ${converted.length} images`,
+        converted 
+      });
+    } catch (error) {
+      console.error("Error converting images:", error);
+      res.status(500).json({ error: "Failed to convert images" });
+    }
+  });
+
   return httpServer;
 }
