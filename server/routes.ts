@@ -8,8 +8,36 @@ import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString("hex");
 const isProduction = process.env.NODE_ENV === "production";
+
+// Helper function to save base64 image to file
+function saveBase64Image(base64Data: string, postId: string): string | null {
+  try {
+    const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
+    if (!matches) return null;
+    
+    const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
+    const imageData = Buffer.from(matches[2], "base64");
+    
+    const assetsDir = path.join(process.cwd(), "attached_assets", "blog_images");
+    if (!fs.existsSync(assetsDir)) {
+      fs.mkdirSync(assetsDir, { recursive: true });
+    }
+    
+    const filename = `blog_${postId.substring(0, 8)}_${Date.now()}.${ext}`;
+    const filepath = path.join(assetsDir, filename);
+    fs.writeFileSync(filepath, imageData);
+    
+    return `@assets/blog_images/${filename}`;
+  } catch (error) {
+    console.error("Error saving image:", error);
+    return null;
+  }
+}
 
 interface AuthRequest extends Request {
   user?: { username: string; id: string };
@@ -264,15 +292,35 @@ export async function registerRoutes(
   app.post("/api/blog/posts", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { title, category, excerpt, content, image, slug, date } = req.body;
+      
+      // First create the post (may have placeholder or base64 image)
       const post = await storage.createBlogPost({
         title,
         category,
         excerpt,
         content,
-        image,
+        image: image || "",
         slug,
         date,
       });
+      
+      // If image is base64, save to file and update post with real path
+      if (image && image.startsWith("data:image")) {
+        const savedPath = saveBase64Image(image, post.id);
+        if (savedPath) {
+          await storage.updateBlogPost(post.id, {
+            title: post.title,
+            category: post.category,
+            excerpt: post.excerpt,
+            content: post.content,
+            image: savedPath,
+            slug: post.slug,
+            date: post.date,
+          });
+          post.image = savedPath;
+        }
+      }
+      
       res.json(post);
     } catch (error) {
       console.error("Error creating blog post:", error);
@@ -283,12 +331,22 @@ export async function registerRoutes(
   app.put("/api/blog/posts/:id", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { title, category, excerpt, content, image, slug, date } = req.body;
+      
+      // Convert base64 image to file if needed (skip if already @assets path)
+      let finalImage = image;
+      if (image && image.startsWith("data:image")) {
+        const savedPath = saveBase64Image(image, req.params.id);
+        if (savedPath) {
+          finalImage = savedPath;
+        }
+      }
+      
       const post = await storage.updateBlogPost(req.params.id, {
         title,
         category,
         excerpt,
         content,
-        image,
+        image: finalImage,
         slug,
         date,
       });
@@ -515,18 +573,15 @@ export async function registerRoutes(
   // Admin endpoint to convert base64 images to files for social media sharing
   app.post("/api/admin/convert-images", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const fs = await import("fs");
-      const path = await import("path");
-      
       // Get all blog posts with base64 images
-      const posts = await storage.getBlogPosts();
-      const base64Posts = posts.filter(p => p.image && p.image.startsWith("data:image"));
+      const posts = await storage.getAllBlogPosts();
+      const base64Posts = posts.filter((p: { image?: string | null }) => p.image && p.image.startsWith("data:image"));
       
       console.log(`Found ${base64Posts.length} posts with base64 images`);
       
-      const assetsDir = path.default.join(process.cwd(), "attached_assets", "blog_images");
-      if (!fs.default.existsSync(assetsDir)) {
-        fs.default.mkdirSync(assetsDir, { recursive: true });
+      const assetsDir = path.join(process.cwd(), "attached_assets", "blog_images");
+      if (!fs.existsSync(assetsDir)) {
+        fs.mkdirSync(assetsDir, { recursive: true });
       }
       
       const converted: string[] = [];
@@ -546,15 +601,23 @@ export async function registerRoutes(
         
         // Create filename from post ID
         const filename = `blog_${post.id.substring(0, 8)}.${ext}`;
-        const filepath = path.default.join(assetsDir, filename);
+        const filepath = path.join(assetsDir, filename);
         
         // Save image file
-        fs.default.writeFileSync(filepath, imageData);
+        fs.writeFileSync(filepath, imageData);
         console.log(`Saved: ${filename}`);
         
         // Update database with new path
         const newImagePath = `@assets/blog_images/${filename}`;
-        await storage.updateBlogPost(post.id, { ...post, image: newImagePath });
+        await storage.updateBlogPost(post.id, {
+          title: post.title,
+          category: post.category,
+          excerpt: post.excerpt,
+          content: post.content,
+          image: newImagePath,
+          slug: post.slug,
+          date: post.date,
+        });
         converted.push(post.title);
         console.log(`Updated DB: ${post.title.substring(0, 40)}...`);
       }
@@ -567,6 +630,34 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error converting images:", error);
       res.status(500).json({ error: "Failed to convert images" });
+    }
+  });
+
+  // Admin endpoint to backup blog posts to JSON file
+  app.post("/api/admin/backup-posts", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts();
+      
+      // Create backup directory
+      const backupDir = path.join(process.cwd(), "data");
+      if (!fs.existsSync(backupDir)) {
+        fs.mkdirSync(backupDir, { recursive: true });
+      }
+      
+      // Save posts to JSON file
+      const backupPath = path.join(backupDir, "blog_posts_backup.json");
+      fs.writeFileSync(backupPath, JSON.stringify(posts, null, 2));
+      
+      console.log(`Backed up ${posts.length} posts to ${backupPath}`);
+      
+      res.json({ 
+        success: true, 
+        message: `Backed up ${posts.length} blog posts to data/blog_posts_backup.json`,
+        postCount: posts.length
+      });
+    } catch (error) {
+      console.error("Error backing up posts:", error);
+      res.status(500).json({ error: "Failed to backup posts" });
     }
   });
 

@@ -62,6 +62,7 @@ export default function AdminEditor() {
   
   // Image conversion state
   const [convertingImages, setConvertingImages] = React.useState(false);
+  const [backingUp, setBackingUp] = React.useState(false);
 
   // Form state
   const [title, setTitle] = React.useState("");
@@ -445,6 +446,40 @@ export default function AdminEditor() {
       });
     } finally {
       setConvertingImages(false);
+    }
+  };
+
+  // Handle blog backup
+  const handleBackupPosts = async () => {
+    setBackingUp(true);
+    try {
+      const response = await fetch("/api/admin/backup-posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeader() }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Backup Complete",
+          description: data.message || "Blog posts have been backed up.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to backup posts.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to backup posts. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setBackingUp(false);
     }
   };
 
@@ -1367,6 +1402,32 @@ export default function AdminEditor() {
                     data-testid="button-convert-images"
                   >
                     {convertingImages ? "Converting..." : "Convert Images for Social Sharing"}
+                  </Button>
+                </div>
+                
+                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8 mt-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+                      <Download className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-serif font-bold text-slate-100">Backup Blog Posts</h2>
+                      <p className="text-xs text-slate-500">Export all posts to Git repository</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-slate-400 mb-4">
+                    Export all blog posts to a JSON file in the repository. 
+                    This ensures your content is backed up and can be restored if needed.
+                  </p>
+                  
+                  <Button 
+                    onClick={handleBackupPosts}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    disabled={backingUp}
+                    data-testid="button-backup-posts"
+                  >
+                    {backingUp ? "Backing up..." : "Backup Blog Posts to Git"}
                   </Button>
                 </div>
               </div>
