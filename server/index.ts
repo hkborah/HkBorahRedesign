@@ -93,9 +93,9 @@ app.use((req, res, next) => {
   } else {
     // In production, serve static files from dist/public
     const distPath = path.resolve(process.cwd(), "dist", "public");
-    app.use(express.static(distPath));
     
     // Handle blog posts with dynamic Open Graph meta tags for social sharing
+    // This MUST be registered BEFORE express.static to intercept the request
     app.get("/journal/:id", async (req, res) => {
       try {
         const post = await storage.getBlogPost(req.params.id);
@@ -165,6 +165,9 @@ app.use((req, res, next) => {
         res.sendFile(path.join(distPath, "index.html"));
       }
     });
+    
+    // Serve static files AFTER the journal route
+    app.use(express.static(distPath));
     
     // Handle client-side routing - serve index.html for all non-API routes
     // Skip API routes and static assets (files with extensions)
