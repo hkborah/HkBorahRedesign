@@ -60,6 +60,21 @@ export function serveStatic(app: Express) {
         imageUrl = `https://hkborah.com${imageUrl}`;
       }
 
+      // Parse date for ISO format
+      let publishedDate = '';
+      if (post.date) {
+        try {
+          const parsed = new Date(post.date);
+          if (!isNaN(parsed.getTime())) {
+            publishedDate = parsed.toISOString();
+          }
+        } catch (e) {
+          console.log('Could not parse date:', post.date);
+        }
+      }
+
+      console.log('Serving OG tags for post:', post.id, 'image:', imageUrl);
+
       const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,20 +82,29 @@ export function serveStatic(app: Express) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${post.title} | HK Borah</title>
   <meta name="description" content="${post.excerpt || ''}" />
+  <meta name="author" content="HK Borah" />
   
   <!-- Open Graph -->
   <meta property="og:type" content="article" />
   <meta property="og:title" content="${post.title}" />
   <meta property="og:description" content="${post.excerpt || ''}" />
   <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta property="og:url" content="https://hkborah.com/journal/${post.id}" />
   <meta property="og:site_name" content="HK Borah" />
+  
+  <!-- Article metadata -->
+  <meta property="article:author" content="HK Borah" />
+  <meta property="article:publisher" content="https://hkborah.com" />
+  ${publishedDate ? `<meta property="article:published_time" content="${publishedDate}" />` : ''}
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${post.title}" />
   <meta name="twitter:description" content="${post.excerpt || ''}" />
   <meta name="twitter:image" content="${imageUrl}" />
+  <meta name="twitter:creator" content="@hkborah" />
   
   <!-- Redirect to actual page -->
   <meta http-equiv="refresh" content="0;url=https://hkborah.com/journal/${post.id}" />
@@ -88,6 +112,7 @@ export function serveStatic(app: Express) {
 <body>
   <h1>${post.title}</h1>
   <p>${post.excerpt || ''}</p>
+  <img src="${imageUrl}" alt="${post.title}" />
 </body>
 </html>`;
 

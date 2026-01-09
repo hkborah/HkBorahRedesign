@@ -110,13 +110,28 @@ app.use((req, res, next) => {
           let imageUrl = post.image || "";
           if (!imageUrl || imageUrl.startsWith("data:")) {
             // No image or base64 images can't be used for OG tags, use default
-            imageUrl = `${baseUrl}/favicon.png`;
+            imageUrl = `${baseUrl}/og-default.png`;
           } else if (imageUrl.startsWith("@assets/")) {
             // Convert @assets path to public /assets URL
             const assetPath = imageUrl.replace("@assets/", "");
             imageUrl = `${baseUrl}/assets/${assetPath}`;
           } else if (!imageUrl.startsWith("http")) {
             imageUrl = `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+          }
+          
+          console.log(`OG Image for post ${req.params.id}: ${imageUrl}`);
+          
+          // Parse date for ISO format
+          let publishedDate = '';
+          if (post.date) {
+            try {
+              const parsed = new Date(post.date);
+              if (!isNaN(parsed.getTime())) {
+                publishedDate = parsed.toISOString();
+              }
+            } catch (e) {
+              console.log('Could not parse date:', post.date);
+            }
           }
           
           // Clean excerpt for meta description
@@ -142,19 +157,27 @@ app.use((req, res, next) => {
           );
           
           // Add og:image and twitter:image tags (insert after og:type)
-          const ogImageTag = `<meta property="og:image" content="${imageUrl}" />`;
+          const ogImageTag = `<meta property="og:image" content="${imageUrl}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />`;
           const twitterImageTag = `<meta name="twitter:image" content="${imageUrl}" />`;
+          
+          // Add article metadata tags
+          const articleTags = `<meta property="article:author" content="HK Borah" />
+    <meta property="article:publisher" content="${baseUrl}" />
+    ${publishedDate ? `<meta property="article:published_time" content="${publishedDate}" />` : ''}
+    <meta name="author" content="HK Borah" />`;
           
           if (!html.includes('og:image')) {
             html = html.replace(
               /<meta property="og:type" content="[^"]*" \/>/,
-              `<meta property="og:type" content="article" />\n    ${ogImageTag}`
+              `<meta property="og:type" content="article" />\n    ${ogImageTag}\n    ${articleTags}`
             );
           }
           if (!html.includes('twitter:image')) {
             html = html.replace(
               /<meta name="twitter:card" content="[^"]*" \/>/,
-              `<meta name="twitter:card" content="summary_large_image" />\n    ${twitterImageTag}`
+              `<meta name="twitter:card" content="summary_large_image" />\n    ${twitterImageTag}\n    <meta name="twitter:creator" content="@hkborah" />`
             );
           }
         }
