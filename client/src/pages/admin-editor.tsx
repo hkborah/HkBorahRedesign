@@ -59,6 +59,9 @@ export default function AdminEditor() {
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [passwordChanging, setPasswordChanging] = React.useState(false);
+  
+  // Image conversion state
+  const [convertingImages, setConvertingImages] = React.useState(false);
 
   // Form state
   const [title, setTitle] = React.useState("");
@@ -408,6 +411,40 @@ export default function AdminEditor() {
       });
     } finally {
       setPasswordChanging(false);
+    }
+  };
+
+  // Handle image conversion for social media sharing
+  const handleConvertImages = async () => {
+    setConvertingImages(true);
+    try {
+      const response = await fetch("/api/admin/convert-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeader() }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Images Converted",
+          description: data.message || "Blog images have been converted for social media sharing.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to convert images.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to convert images. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setConvertingImages(false);
     }
   };
 
@@ -1305,6 +1342,32 @@ export default function AdminEditor() {
                       {passwordChanging ? "Changing..." : "Change Password"}
                     </Button>
                   </form>
+                </div>
+                
+                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8 mt-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                      <Upload className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-serif font-bold text-slate-100">Social Media Images</h2>
+                      <p className="text-xs text-slate-500">Fix blog post images for LinkedIn/Facebook</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-slate-400 mb-4">
+                    Convert blog post images to proper format for social media sharing. 
+                    This fixes the issue where LinkedIn/Facebook show the logo instead of blog images.
+                  </p>
+                  
+                  <Button 
+                    onClick={handleConvertImages}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    disabled={convertingImages}
+                    data-testid="button-convert-images"
+                  >
+                    {convertingImages ? "Converting..." : "Convert Images for Social Sharing"}
+                  </Button>
                 </div>
               </div>
             </TabsContent>
