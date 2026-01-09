@@ -156,30 +156,47 @@ app.use((req, res, next) => {
             `<meta name="twitter:description" content="${description}" />`
           );
           
-          // Add og:image and twitter:image tags (insert after og:type)
-          const ogImageTag = `<meta property="og:image" content="${imageUrl}" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />`;
-          const twitterImageTag = `<meta name="twitter:image" content="${imageUrl}" />`;
+          // Replace og:type to article
+          html = html.replace(
+            /<meta property="og:type" content="[^"]*" \/>/,
+            `<meta property="og:type" content="article" />`
+          );
           
-          // Add article metadata tags
+          // Replace og:image with post image
+          html = html.replace(
+            /<meta property="og:image" content="[^"]*" \/>/,
+            `<meta property="og:image" content="${imageUrl}" />`
+          );
+          html = html.replace(
+            /<meta property="og:image:width" content="[^"]*" \/>/,
+            `<meta property="og:image:width" content="1200" />`
+          );
+          html = html.replace(
+            /<meta property="og:image:height" content="[^"]*" \/>/,
+            `<meta property="og:image:height" content="630" />`
+          );
+          
+          // Replace og:url with post URL
+          html = html.replace(
+            /<meta property="og:url" content="[^"]*" \/>/,
+            `<meta property="og:url" content="${baseUrl}/journal/${req.params.id}" />`
+          );
+          
+          // Replace twitter:image
+          html = html.replace(
+            /<meta name="twitter:image" content="[^"]*" \/>/,
+            `<meta name="twitter:image" content="${imageUrl}" />`
+          );
+          
+          // Add article metadata tags after og:site_name
           const articleTags = `<meta property="article:author" content="HK Borah" />
     <meta property="article:publisher" content="${baseUrl}" />
-    ${publishedDate ? `<meta property="article:published_time" content="${publishedDate}" />` : ''}
-    <meta name="author" content="HK Borah" />`;
+    ${publishedDate ? `<meta property="article:published_time" content="${publishedDate}" />` : ''}`;
           
-          if (!html.includes('og:image')) {
-            html = html.replace(
-              /<meta property="og:type" content="[^"]*" \/>/,
-              `<meta property="og:type" content="article" />\n    ${ogImageTag}\n    ${articleTags}`
-            );
-          }
-          if (!html.includes('twitter:image')) {
-            html = html.replace(
-              /<meta name="twitter:card" content="[^"]*" \/>/,
-              `<meta name="twitter:card" content="summary_large_image" />\n    ${twitterImageTag}\n    <meta name="twitter:creator" content="@hkborah" />`
-            );
-          }
+          html = html.replace(
+            /<meta property="og:site_name" content="[^"]*" \/>/,
+            `<meta property="og:site_name" content="HK Borah" />\n    ${articleTags}`
+          );
         }
         
         res.send(html);
