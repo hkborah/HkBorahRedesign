@@ -6,7 +6,6 @@ import { google } from "googleapis";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
-import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
 import crypto from "crypto";
 import fs from "fs";
@@ -88,7 +87,7 @@ async function getGoogleDriveClient() {
     });
 
     const authClient = await auth.getClient();
-    return google.drive({ version: 'v3', auth: authClient as any });
+    return google.drive({ version: 'v3', auth: authClient });
   } catch (error) {
     console.error("Google Auth Error:", error);
     return null;
@@ -156,9 +155,6 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Register object storage routes for blog image uploads
-  registerObjectStorageRoutes(app);
-
   app.post("/api/chat/save", async (req, res) => {
     try {
       const { messages } = req.body;

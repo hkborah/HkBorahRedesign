@@ -106,14 +106,11 @@ app.use((req, res, next) => {
           // Get the base URL for absolute image paths
           const baseUrl = `https://${req.get("host")}`;
           
-          // Handle different image formats (base64, URL, @assets path, cloud storage path, or relative path)
+          // Handle different image formats (base64, URL, @assets path, or relative path)
           let imageUrl = post.image || "";
           if (!imageUrl || imageUrl.startsWith("data:")) {
             // No image or base64 images can't be used for OG tags, use default
             imageUrl = `${baseUrl}/og-default.png`;
-          } else if (imageUrl.startsWith("/objects/")) {
-            // Cloud storage path - keep as is since /objects route serves these
-            imageUrl = `${baseUrl}${imageUrl}`;
           } else if (imageUrl.startsWith("@assets/")) {
             // Convert @assets path to public /assets URL
             const assetPath = imageUrl.replace("@assets/", "");

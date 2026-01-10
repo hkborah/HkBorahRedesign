@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, FileText, MessageSquare, Settings, Lock, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link2, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Plus, Upload, Bold, Italic, Underline, Heading1, Heading2, Heading3, List, Trash2, Eye, Edit, Indent, Outdent, Download, Calendar, FileText, MessageSquare, Settings, Lock, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
-import { useUpload } from "@/hooks/use-upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
@@ -70,29 +69,9 @@ export default function AdminEditor() {
   const [category, setCategory] = React.useState("");
   const [content, setContent] = React.useState("");
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-  const [imageUrl, setImageUrl] = React.useState<string | null>(null); // Cloud storage URL
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const savedSelectionRef = React.useRef<Range | null>(null);
-  
-  // Cloud storage upload hook
-  const { uploadFile, isUploading } = useUpload({
-    onSuccess: (response) => {
-      // Store the object path for use in the blog post
-      setImageUrl(response.objectPath);
-      toast({
-        title: "Image Uploaded",
-        description: "Your image has been uploaded to cloud storage.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to upload image. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Redirect to login if not authenticated
   React.useEffect(() => {
@@ -532,15 +511,11 @@ export default function AdminEditor() {
     if (file) {
       const isValid = await validateImageDimensions(file);
       if (isValid) {
-        // Show local preview immediately
         const reader = new FileReader();
         reader.onloadend = () => {
           setImagePreview(reader.result as string);
         };
         reader.readAsDataURL(file);
-        
-        // Upload to cloud storage
-        await uploadFile(file);
       }
     }
   };
@@ -703,16 +678,13 @@ export default function AdminEditor() {
     tempDiv.innerHTML = content;
     const plainText = tempDiv.textContent || tempDiv.innerText || '';
     
-    // Use cloud storage URL if available, otherwise use existing image or placeholder
-    const finalImage = imageUrl || imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop";
-    
     const newPost = {
         title,
         category,
         excerpt: plainText.substring(0, 100).trim() + (plainText.length > 100 ? "..." : ""),
         content,
         date: editingPostId ? posts.find(p => p.id === editingPostId)?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        image: finalImage,
+        image: imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
         slug: title.toLowerCase().replace(/\s+/g, '-')
     };
 
@@ -772,7 +744,6 @@ export default function AdminEditor() {
     setCategory("");
     setContent("");
     setImagePreview(null);
-    setImageUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -784,8 +755,6 @@ export default function AdminEditor() {
     setCategory(post.category || "");
     setContent(post.content);
     setImagePreview(post.image);
-    // If editing, keep the existing image URL
-    setImageUrl(post.image?.startsWith('/objects/') ? post.image : null);
     setIsEditing(true);
     setShowPreview(false);
   };
