@@ -88,7 +88,7 @@ async function getGoogleDriveClient() {
     });
 
     const authClient = await auth.getClient();
-    return google.drive({ version: 'v3', auth: authClient });
+    return google.drive({ version: 'v3', auth: authClient as any });
   } catch (error) {
     console.error("Google Auth Error:", error);
     return null;
