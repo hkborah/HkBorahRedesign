@@ -495,6 +495,10 @@ export default function AdminEditor() {
           const minHeight = 315;
           
           if (img.width >= minWidth && img.height >= minHeight) {
+            toast({
+              title: "Image Loaded",
+              description: `Image accepted: ${img.width}x${img.height}`,
+            });
             resolve(true);
           } else {
             toast({
@@ -505,7 +509,23 @@ export default function AdminEditor() {
             resolve(false);
           }
         };
+        img.onerror = () => {
+          toast({
+            title: "Image Load Failed",
+            description: "Could not load the image. Please try a different file.",
+            variant: "destructive"
+          });
+          resolve(false);
+        };
         img.src = e.target?.result as string;
+      };
+      reader.onerror = () => {
+        toast({
+          title: "File Read Failed",
+          description: "Could not read the file. Please try again.",
+          variant: "destructive"
+        });
+        resolve(false);
       };
       reader.readAsDataURL(file);
     });
