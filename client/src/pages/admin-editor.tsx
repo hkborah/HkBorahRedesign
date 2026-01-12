@@ -483,65 +483,25 @@ export default function AdminEditor() {
     }
   };
 
-  const validateImageDimensions = (file: File): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          // Accept images with minimum dimensions for good social sharing
-          // Recommended: 1200x630 for OG, but accept any reasonable size
-          const minWidth = 600;
-          const minHeight = 315;
-          
-          if (img.width >= minWidth && img.height >= minHeight) {
-            toast({
-              title: "Image Loaded",
-              description: `Image accepted: ${img.width}x${img.height}`,
-            });
-            resolve(true);
-          } else {
-            toast({
-              title: "Image Too Small",
-              description: `Image should be at least ${minWidth}x${minHeight}. Current: ${img.width}x${img.height}`,
-              variant: "destructive"
-            });
-            resolve(false);
-          }
-        };
-        img.onerror = () => {
-          toast({
-            title: "Image Load Failed",
-            description: "Could not load the image. Please try a different file.",
-            variant: "destructive"
-          });
-          resolve(false);
-        };
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => {
-        toast({
-          title: "File Read Failed",
-          description: "Could not read the file. Please try again.",
-          variant: "destructive"
-        });
-        resolve(false);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const isValid = await validateImageDimensions(file);
-      if (isValid) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        toast({
+          title: "Image Uploaded",
+          description: "Your image has been loaded successfully.",
+        });
+      };
+      reader.onerror = () => {
+        toast({
+          title: "Upload Failed",
+          description: "Could not read the file. Please try again.",
+          variant: "destructive"
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
