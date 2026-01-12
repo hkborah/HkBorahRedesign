@@ -9,6 +9,7 @@ import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { useUpload } from "@/hooks/use-upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
@@ -69,7 +70,26 @@ export default function AdminEditor() {
   const [category, setCategory] = React.useState("");
   const [content, setContent] = React.useState("");
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+  const [imageObjectPath, setImageObjectPath] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Object storage upload hook
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (response) => {
+      setImageObjectPath(response.objectPath);
+      toast({
+        title: "Image Uploaded",
+        description: "Your image has been uploaded successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Could not upload the file. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
   const contentRef = React.useRef<HTMLDivElement>(null);
   const savedSelectionRef = React.useRef<Range | null>(null);
 
@@ -486,22 +506,20 @@ export default function AdminEditor() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        toast({
-          title: "Image Uploaded",
-          description: "Your image has been loaded successfully.",
-        });
-      };
-      reader.onerror = () => {
-        toast({
-          title: "Upload Failed",
-          description: "Could not read the file. Please try again.",
-          variant: "destructive"
-        });
-      };
-      reader.readAsDataURL(file);
+      // Create a local preview immediately
+      const localPreviewUrl = URL.createObjectURL(file);
+      setImagePreview(localPreviewUrl);
+      
+      // Upload to object storage
+      const response = await uploadFile(file);
+      if (response) {
+        // Update preview to use the object storage path
+        setImagePreview(response.objectPath);
+      } else {
+        // Upload failed, clear the preview
+        setImagePreview(null);
+        setImageObjectPath(null);
+      }
     }
   };
 
@@ -669,7 +687,7 @@ export default function AdminEditor() {
         excerpt: plainText.substring(0, 100).trim() + (plainText.length > 100 ? "..." : ""),
         content,
         date: editingPostId ? posts.find(p => p.id === editingPostId)?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        image: imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
+        image: imageObjectPath || imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
         slug: title.toLowerCase().replace(/\s+/g, '-')
     };
 
@@ -729,6 +747,7 @@ export default function AdminEditor() {
     setCategory("");
     setContent("");
     setImagePreview(null);
+    setImageObjectPath(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -740,6 +759,12 @@ export default function AdminEditor() {
     setCategory(post.category || "");
     setContent(post.content);
     setImagePreview(post.image);
+    // If the existing image is an object storage path, set it as the object path
+    if (post.image && post.image.startsWith("/objects/")) {
+      setImageObjectPath(post.image);
+    } else {
+      setImageObjectPath(null);
+    }
     setIsEditing(true);
     setShowPreview(false);
   };
@@ -860,25 +885,32 @@ export default function AdminEditor() {
                               {imagePreview ? (
                                 <div className="relative h-48 w-full rounded-lg overflow-hidden border-2 border-amber-500/30 bg-slate-900">
                                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                  {isUploading && (
+                                    <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center">
+                                      <span className="text-amber-500 text-sm">Uploading...</span>
+                                    </div>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() => {
                                       setImagePreview(null);
+                                      setImageObjectPath(null);
                                       if (fileInputRef.current) fileInputRef.current.value = "";
                                     }}
                                     className="absolute top-2 right-2 bg-slate-950/90 hover:bg-slate-950 text-amber-500 px-3 py-1 rounded text-sm"
+                                    disabled={isUploading}
                                   >
                                     Change
                                   </button>
                                 </div>
                               ) : (
                                 <label 
-                                  onClick={() => fileInputRef.current?.click()}
-                                  className="flex flex-col items-center justify-center h-48 rounded-lg border-2 border-dashed border-slate-700 hover:border-amber-500/50 bg-slate-900/30 cursor-pointer transition-colors"
+                                  onClick={() => !isUploading && fileInputRef.current?.click()}
+                                  className={`flex flex-col items-center justify-center h-48 rounded-lg border-2 border-dashed bg-slate-900/30 transition-colors ${isUploading ? 'border-slate-700 cursor-wait' : 'border-slate-700 hover:border-amber-500/50 cursor-pointer'}`}
                                 >
                                   <Upload className="h-8 w-8 text-slate-500 mb-2" />
-                                  <span className="text-slate-400 text-sm">Click to upload image</span>
-                                  <span className="text-slate-600 text-xs">or drag and drop</span>
+                                  <span className="text-slate-400 text-sm">{isUploading ? 'Uploading...' : 'Click to upload image'}</span>
+                                  <span className="text-slate-600 text-xs">{isUploading ? 'Please wait' : 'or drag and drop'}</span>
                                 </label>
                               )}
                               <input 
