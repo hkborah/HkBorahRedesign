@@ -70,12 +70,6 @@ app.use((req, res, next) => {
 
 (async () => {
   const httpServer = createServer(app);
-  
-  // Health check endpoint - must respond quickly for deployment
-  app.get("/health", (_req, res) => {
-    res.status(200).json({ status: "ok" });
-  });
-
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -86,10 +80,6 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Serve attached_assets at /assets for OG images (both dev and prod)
-  const assetsPath = path.resolve(process.cwd(), "attached_assets");
-  app.use("/assets", express.static(assetsPath));
-
   // importantly only setup vite in development and after
   // setting up all the other routes so the index.html under
   // public is overwritten by react-router-dom router
@@ -99,9 +89,9 @@ app.use((req, res, next) => {
   } else {
     // In production, serve static files from dist/public
     const distPath = path.resolve(process.cwd(), "dist", "public");
+    app.use(express.static(distPath));
     
     // Handle blog posts with dynamic Open Graph meta tags for social sharing
-    // This MUST be registered BEFORE express.static to intercept the request
     app.get("/journal/:id", async (req, res) => {
       try {
         const post = await storage.getBlogPost(req.params.id);
@@ -112,32 +102,13 @@ app.use((req, res, next) => {
           // Get the base URL for absolute image paths
           const baseUrl = `https://${req.get("host")}`;
           
-          // Handle different image formats (base64, URL, @assets path, or relative path)
+          // Handle different image formats (base64, URL, or relative path)
           let imageUrl = post.image || "";
           if (!imageUrl || imageUrl.startsWith("data:")) {
             // No image or base64 images can't be used for OG tags, use default
-            imageUrl = `${baseUrl}/og-default.png`;
-          } else if (imageUrl.startsWith("@assets/")) {
-            // Convert @assets path to public /assets URL
-            const assetPath = imageUrl.replace("@assets/", "");
-            imageUrl = `${baseUrl}/assets/${assetPath}`;
+            imageUrl = `${baseUrl}/favicon.png`;
           } else if (!imageUrl.startsWith("http")) {
             imageUrl = `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
-          }
-          
-          console.log(`OG Image for post ${req.params.id}: ${imageUrl}`);
-          
-          // Parse date for ISO format
-          let publishedDate = '';
-          if (post.date) {
-            try {
-              const parsed = new Date(post.date);
-              if (!isNaN(parsed.getTime())) {
-                publishedDate = parsed.toISOString();
-              }
-            } catch (e) {
-              console.log('Could not parse date:', post.date);
-            }
           }
           
           // Clean excerpt for meta description
@@ -162,47 +133,22 @@ app.use((req, res, next) => {
             `<meta name="twitter:description" content="${description}" />`
           );
           
-          // Replace og:type to article
-          html = html.replace(
-            /<meta property="og:type" content="[^"]*" \/>/,
-            `<meta property="og:type" content="article" />`
-          );
+          // Add og:image and twitter:image tags (insert after og:type)
+          const ogImageTag = `<meta property="og:image" content="${imageUrl}" />`;
+          const twitterImageTag = `<meta name="twitter:image" content="${imageUrl}" />`;
           
-          // Replace og:image with post image
-          html = html.replace(
-            /<meta property="og:image" content="[^"]*" \/>/,
-            `<meta property="og:image" content="${imageUrl}" />`
-          );
-          html = html.replace(
-            /<meta property="og:image:width" content="[^"]*" \/>/,
-            `<meta property="og:image:width" content="1200" />`
-          );
-          html = html.replace(
-            /<meta property="og:image:height" content="[^"]*" \/>/,
-            `<meta property="og:image:height" content="630" />`
-          );
-          
-          // Replace og:url with post URL
-          html = html.replace(
-            /<meta property="og:url" content="[^"]*" \/>/,
-            `<meta property="og:url" content="${baseUrl}/journal/${req.params.id}" />`
-          );
-          
-          // Replace twitter:image
-          html = html.replace(
-            /<meta name="twitter:image" content="[^"]*" \/>/,
-            `<meta name="twitter:image" content="${imageUrl}" />`
-          );
-          
-          // Add article metadata tags after og:site_name
-          const articleTags = `<meta property="article:author" content="HK Borah" />
-    <meta property="article:publisher" content="${baseUrl}" />
-    ${publishedDate ? `<meta property="article:published_time" content="${publishedDate}" />` : ''}`;
-          
-          html = html.replace(
-            /<meta property="og:site_name" content="[^"]*" \/>/,
-            `<meta property="og:site_name" content="HK Borah" />\n    ${articleTags}`
-          );
+          if (!html.includes('og:image')) {
+            html = html.replace(
+              /<meta property="og:type" content="[^"]*" \/>/,
+              `<meta property="og:type" content="article" />\n    ${ogImageTag}`
+            );
+          }
+          if (!html.includes('twitter:image')) {
+            html = html.replace(
+              /<meta name="twitter:card" content="[^"]*" \/>/,
+              `<meta name="twitter:card" content="summary_large_image" />\n    ${twitterImageTag}`
+            );
+          }
         }
         
         res.send(html);
@@ -211,9 +157,6 @@ app.use((req, res, next) => {
         res.sendFile(path.join(distPath, "index.html"));
       }
     });
-    
-    // Serve static files AFTER the journal route
-    app.use(express.static(distPath));
     
     // Handle client-side routing - serve index.html for all non-API routes
     // Skip API routes and static assets (files with extensions)

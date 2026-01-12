@@ -9,7 +9,6 @@ import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
-import { useUpload } from "@/hooks/use-upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
@@ -60,36 +59,13 @@ export default function AdminEditor() {
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [passwordChanging, setPasswordChanging] = React.useState(false);
-  
-  // Image conversion state
-  const [convertingImages, setConvertingImages] = React.useState(false);
-  const [backingUp, setBackingUp] = React.useState(false);
 
   // Form state
   const [title, setTitle] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [content, setContent] = React.useState("");
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-  const [imageObjectPath, setImageObjectPath] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  // Object storage upload hook
-  const { uploadFile, isUploading } = useUpload({
-    onSuccess: (response) => {
-      setImageObjectPath(response.objectPath);
-      toast({
-        title: "Image Uploaded",
-        description: "Your image has been uploaded successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Upload Failed",
-        description: error.message || "Could not upload the file. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
   const contentRef = React.useRef<HTMLDivElement>(null);
   const savedSelectionRef = React.useRef<Range | null>(null);
 
@@ -435,90 +411,39 @@ export default function AdminEditor() {
     }
   };
 
-  // Handle image conversion for social media sharing
-  const handleConvertImages = async () => {
-    setConvertingImages(true);
-    try {
-      const response = await fetch("/api/admin/convert-images", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeader() }
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        toast({
-          title: "Images Converted",
-          description: data.message || "Blog images have been converted for social media sharing.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to convert images.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to convert images. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setConvertingImages(false);
-    }
-  };
-
-  // Handle blog backup
-  const handleBackupPosts = async () => {
-    setBackingUp(true);
-    try {
-      const response = await fetch("/api/admin/backup-posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeader() }
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        toast({
-          title: "Backup Complete",
-          description: data.message || "Blog posts have been backed up.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to backup posts.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to backup posts. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setBackingUp(false);
-    }
+  const validateImageDimensions = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          if (img.width === 1920 && img.height === 1080) {
+            resolve(true);
+          } else {
+            toast({
+              title: "Invalid Image Dimensions",
+              description: `Image must be 1920x1080. Current: ${img.width}x${img.height}`,
+              variant: "destructive"
+            });
+            resolve(false);
+          }
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Create a local preview immediately
-      const localPreviewUrl = URL.createObjectURL(file);
-      setImagePreview(localPreviewUrl);
-      
-      // Upload to object storage
-      const response = await uploadFile(file);
-      if (response) {
-        // Update preview to use the object storage path
-        setImagePreview(response.objectPath);
-      } else {
-        // Upload failed, clear the preview
-        setImagePreview(null);
-        setImageObjectPath(null);
+      const isValid = await validateImageDimensions(file);
+      if (isValid) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
       }
     }
   };
@@ -687,7 +612,7 @@ export default function AdminEditor() {
         excerpt: plainText.substring(0, 100).trim() + (plainText.length > 100 ? "..." : ""),
         content,
         date: editingPostId ? posts.find(p => p.id === editingPostId)?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        image: imageObjectPath || imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
+        image: imagePreview || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop",
         slug: title.toLowerCase().replace(/\s+/g, '-')
     };
 
@@ -747,7 +672,6 @@ export default function AdminEditor() {
     setCategory("");
     setContent("");
     setImagePreview(null);
-    setImageObjectPath(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -759,12 +683,6 @@ export default function AdminEditor() {
     setCategory(post.category || "");
     setContent(post.content);
     setImagePreview(post.image);
-    // If the existing image is an object storage path, set it as the object path
-    if (post.image && post.image.startsWith("/objects/")) {
-      setImageObjectPath(post.image);
-    } else {
-      setImageObjectPath(null);
-    }
     setIsEditing(true);
     setShowPreview(false);
   };
@@ -885,32 +803,25 @@ export default function AdminEditor() {
                               {imagePreview ? (
                                 <div className="relative h-48 w-full rounded-lg overflow-hidden border-2 border-amber-500/30 bg-slate-900">
                                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                                  {isUploading && (
-                                    <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center">
-                                      <span className="text-amber-500 text-sm">Uploading...</span>
-                                    </div>
-                                  )}
                                   <button
                                     type="button"
                                     onClick={() => {
                                       setImagePreview(null);
-                                      setImageObjectPath(null);
                                       if (fileInputRef.current) fileInputRef.current.value = "";
                                     }}
                                     className="absolute top-2 right-2 bg-slate-950/90 hover:bg-slate-950 text-amber-500 px-3 py-1 rounded text-sm"
-                                    disabled={isUploading}
                                   >
                                     Change
                                   </button>
                                 </div>
                               ) : (
                                 <label 
-                                  onClick={() => !isUploading && fileInputRef.current?.click()}
-                                  className={`flex flex-col items-center justify-center h-48 rounded-lg border-2 border-dashed bg-slate-900/30 transition-colors ${isUploading ? 'border-slate-700 cursor-wait' : 'border-slate-700 hover:border-amber-500/50 cursor-pointer'}`}
+                                  onClick={() => fileInputRef.current?.click()}
+                                  className="flex flex-col items-center justify-center h-48 rounded-lg border-2 border-dashed border-slate-700 hover:border-amber-500/50 bg-slate-900/30 cursor-pointer transition-colors"
                                 >
                                   <Upload className="h-8 w-8 text-slate-500 mb-2" />
-                                  <span className="text-slate-400 text-sm">{isUploading ? 'Uploading...' : 'Click to upload image'}</span>
-                                  <span className="text-slate-600 text-xs">{isUploading ? 'Please wait' : 'or drag and drop'}</span>
+                                  <span className="text-slate-400 text-sm">Click to upload image</span>
+                                  <span className="text-slate-600 text-xs">or drag and drop</span>
                                 </label>
                               )}
                               <input 
@@ -1394,58 +1305,6 @@ export default function AdminEditor() {
                       {passwordChanging ? "Changing..." : "Change Password"}
                     </Button>
                   </form>
-                </div>
-                
-                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8 mt-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                      <Upload className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-serif font-bold text-slate-100">Social Media Images</h2>
-                      <p className="text-xs text-slate-500">Fix blog post images for LinkedIn/Facebook</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-slate-400 mb-4">
-                    Convert blog post images to proper format for social media sharing. 
-                    This fixes the issue where LinkedIn/Facebook show the logo instead of blog images.
-                  </p>
-                  
-                  <Button 
-                    onClick={handleConvertImages}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                    disabled={convertingImages}
-                    data-testid="button-convert-images"
-                  >
-                    {convertingImages ? "Converting..." : "Convert Images for Social Sharing"}
-                  </Button>
-                </div>
-                
-                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8 mt-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                      <Download className="h-5 w-5 text-green-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-serif font-bold text-slate-100">Backup Blog Posts</h2>
-                      <p className="text-xs text-slate-500">Export all posts to Git repository</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-slate-400 mb-4">
-                    Export all blog posts to a JSON file in the repository. 
-                    This ensures your content is backed up and can be restored if needed.
-                  </p>
-                  
-                  <Button 
-                    onClick={handleBackupPosts}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white"
-                    disabled={backingUp}
-                    data-testid="button-backup-posts"
-                  >
-                    {backingUp ? "Backing up..." : "Backup Blog Posts to Git"}
-                  </Button>
                 </div>
               </div>
             </TabsContent>

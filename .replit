@@ -8,6 +8,7 @@ channel = "stable-25_05"
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
+publicDir = "dist/public"
 run = ["node", "./dist/index.cjs"]
 
 [[ports]]
@@ -44,7 +45,7 @@ waitForPort = 5000
 
 [agent]
 mockupState = "FULLSTACK"
-integrations = ["google-drive:1.0.0", "resend:1.0.0", "javascript_object_storage:2.0.0"]
+integrations = ["google-drive:1.0.0", "resend:1.0.0"]
 expertMode = true
 
 [userenv]

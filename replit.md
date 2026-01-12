@@ -75,22 +75,7 @@ Several custom Vite plugins enhance the development experience:
 ## Third-Party Services
 
 - **Neon Database**: Serverless PostgreSQL hosting (via `@neondatabase/serverless`)
-- **Replit Object Storage**: Cloud file storage for uploaded images (blog featured images). Files are uploaded directly to Google Cloud Storage via presigned URLs. Object paths are stored in the database as `/objects/uploads/{uuid}`.
 - **Replit Infrastructure**: Deployment platform with custom plugins for development and production
-
-## File Storage Architecture
-
-Blog post featured images are stored in Replit Object Storage to persist across deployments:
-
-- **Upload Flow**: Presigned URL flow (client requests URL → uploads directly to cloud storage)
-- **Server Module**: `server/replit_integrations/object_storage/` - GCS client, routes, and ACL utilities
-- **Client Components**: 
-  - `client/src/hooks/use-upload.ts` - React hook for upload state management
-  - `client/src/components/ObjectUploader.tsx` - Uppy-based upload component
-- **API Endpoints**:
-  - `POST /api/uploads/request-url` - Get presigned upload URL
-  - `GET /objects/*` - Serve uploaded files from object storage
-- **Legacy Images**: Existing images in `@assets/` paths (committed to git) continue to work alongside new object storage paths
 
 ## Key Libraries and Frameworks
 
