@@ -489,12 +489,17 @@ export default function AdminEditor() {
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          if (img.width === 1920 && img.height === 1080) {
+          // Accept images with minimum dimensions for good social sharing
+          // Recommended: 1200x630 for OG, but accept any reasonable size
+          const minWidth = 600;
+          const minHeight = 315;
+          
+          if (img.width >= minWidth && img.height >= minHeight) {
             resolve(true);
           } else {
             toast({
-              title: "Invalid Image Dimensions",
-              description: `Image must be 1920x1080. Current: ${img.width}x${img.height}`,
+              title: "Image Too Small",
+              description: `Image should be at least ${minWidth}x${minHeight}. Current: ${img.width}x${img.height}`,
               variant: "destructive"
             });
             resolve(false);
