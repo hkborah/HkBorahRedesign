@@ -1,14 +1,13 @@
-import { type Express } from "express";
+import express, { type Express } from "express";
 import fs from "fs";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
+import path from "path";
 import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Use process.cwd() for compatibility with both ESM dev and CJS production builds
+const rootDir = process.cwd();
 const viteLogger = createLogger();
 
 export function log(message: string, source = "express") {
@@ -49,8 +48,7 @@ export async function setupVite(app: Express, server: Server) {
 
     try {
       const clientTemplate = path.resolve(
-        __dirname,
-        "..",
+        rootDir,
         "client",
         "index.html",
       );
@@ -71,7 +69,7 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(__dirname, "public");
+  const distPath = path.resolve(rootDir, "dist", "public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
