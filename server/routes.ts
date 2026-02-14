@@ -127,6 +127,32 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.get("/sitemap.xml", async (req, res) => {
+    const baseUrl = process.env.SITE_URL || `https://${req.get("host")}`;
+    const posts = await storage.getAllBlogPosts();
+    
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${baseUrl}/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
+  <url><loc>${baseUrl}/framework</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>${baseUrl}/journal</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <url><loc>${baseUrl}/chat</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>`;
+    
+    for (const post of posts) {
+      xml += `\n  <url><loc>${baseUrl}/journal/${post.id}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>`;
+    }
+    
+    xml += `\n</urlset>`;
+    res.header("Content-Type", "application/xml");
+    res.send(xml);
+  });
+
+  app.get("/robots.txt", (req, res) => {
+    const baseUrl = process.env.SITE_URL || `https://${req.get("host")}`;
+    res.header("Content-Type", "text/plain");
+    res.send(`User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${baseUrl}/sitemap.xml\n`);
+  });
+
   app.post("/api/chat/save", async (req, res) => {
     try {
       const { messages } = req.body;

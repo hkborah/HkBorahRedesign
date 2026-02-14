@@ -91,6 +91,35 @@ app.use((req, res, next) => {
     const distPath = path.resolve(process.cwd(), "dist", "public");
     app.use(express.static(distPath));
     
+    const pageSeo: Record<string, { title: string; description: string }> = {
+      "/framework": {
+        title: "Architectural Scaling Framework | HK Borah",
+        description: "From Chaos to Scale. Diagnose your startup's scaling stage, identify your zone of pain, and access proven architectural solutions in the Case File Codex."
+      },
+      "/journal": {
+        title: "Journal | HK Borah - The Business Architect",
+        description: "Insights on startup scaling, business architecture, and operational systems from HK Borah. Read the latest articles and case studies."
+      },
+      "/chat": {
+        title: "Chat with HK Borah's Digital Twin",
+        description: "Validate ideas, fix broken processes, or scale your startup using the Architectural Scaling Framework with HK Borah's AI-powered digital twin."
+      }
+    };
+
+    for (const [route, seo] of Object.entries(pageSeo)) {
+      app.get(route, (_req, res) => {
+        const indexPath = path.join(distPath, "index.html");
+        let html = fs.readFileSync(indexPath, "utf-8");
+        html = html.replace(/<title>[^<]*<\/title>/, `<title>${seo.title}</title>`);
+        html = html.replace(/<meta name="description" content="[^"]*" \/>/, `<meta name="description" content="${seo.description}" />`);
+        html = html.replace(/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${seo.title}" />`);
+        html = html.replace(/<meta property="og:description" content="[^"]*" \/>/, `<meta property="og:description" content="${seo.description}" />`);
+        html = html.replace(/<meta name="twitter:title" content="[^"]*" \/>/, `<meta name="twitter:title" content="${seo.title}" />`);
+        html = html.replace(/<meta name="twitter:description" content="[^"]*" \/>/, `<meta name="twitter:description" content="${seo.description}" />`);
+        res.send(html);
+      });
+    }
+
     // Handle blog posts with dynamic Open Graph meta tags for social sharing
     app.get("/journal/:id", async (req, res) => {
       try {

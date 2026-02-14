@@ -52,3 +52,4 @@ expertMode = true
 
 [userenv.shared]
 JWT_SECRET = "d821adc6c1a03b7f61113e2ca210604bdc2f927fac62d84619c4abb77233306802e810ddd3c9fcc091f41d4630ffea5a34a699f50e8cfb608dc2f44bb68ac2c0"
+SITE_URL = "https://hkborah.com"
