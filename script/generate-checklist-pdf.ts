@@ -4,6 +4,7 @@ import path from "node:path";
 
 const OUT = path.resolve("client/public/last-firefighter-90-day-checklist.pdf");
 const COVER = path.resolve("attached_assets/image_1778398480861.png");
+const COVER_ORDER_OF_CHAOS = path.resolve("attached_assets/book-cover-order-of-chaos.png");
 
 const COLORS = {
   bg: "#020617",
@@ -414,64 +415,110 @@ async function generate() {
 
   doc.moveDown(2);
 
-  // Cover thumbnail + book block
-  if (fs.existsSync(COVER)) {
-    const imgW = 140;
-    try {
-      doc.image(COVER, MARGIN, doc.y, { width: imgW });
-    } catch {}
-    const textX = MARGIN + imgW + 24;
-    const textW = CONTENT_W - imgW - 24;
-    const textY = doc.y;
+  // Two-column book layout
+  const books = [
+    {
+      cover: COVER,
+      tag: "PREDICTIVE QUALITY",
+      title: "The Last Firefighter",
+      subtitle: "Merging AI and Six Sigma for Predictive Quality",
+      desc: "The definitive analysis of the core methodology and the 80+ cornerstone case files showing how AI and Six Sigma merge to predict and prevent defects.",
+      url: "https://notionpress.com/in/read/the-last-firefighter",
+      cta: "BUY ON NOTIONPRESS \u2192",
+    },
+    {
+      cover: COVER_ORDER_OF_CHAOS,
+      tag: "FOUNDER'S BLUEPRINT",
+      title: "The Order of Chaos",
+      subtitle: "The Architectural Scaling Framework",
+      desc: "The deep analysis of the cornerstone case files for each domain \u2013 the foundational problems every founder must solve when scaling from chaos to structure.",
+      url: "https://notionpress.com/in/read/the-order-of-chaos",
+      cta: "BUY ON NOTIONPRESS \u2192",
+    },
+  ];
 
-    doc.fillColor(COLORS.amber).font("Helvetica").fontSize(8)
-      .text("BY HK BORAH", textX, textY, { characterSpacing: 2 });
-    doc.fillColor(COLORS.textPrimary).font("Times-Bold").fontSize(22)
-      .text("The Last Firefighter", textX, textY + 14, { width: textW });
-    doc.fillColor(COLORS.amberSoft).font("Times-Italic").fontSize(12)
-      .text("Merging AI and Six Sigma for Predictive Quality", textX, doc.y + 2, { width: textW });
+  const colGap = 20;
+  const colW = (CONTENT_W - colGap) / 2;
+  const colTop = doc.y;
+  const coverW = 100;
 
-    doc.moveDown(0.8);
-    doc.fillColor(COLORS.textSecondary).font("Helvetica").fontSize(10)
-      .text(
-        "The definitive, deep analysis of the core methodology and the 80+ cornerstone case files every quality professional must solve.",
-        textX,
-        doc.y,
-        { width: textW, lineGap: 2 }
-      );
+  for (let i = 0; i < books.length; i++) {
+    const book = books[i];
+    const colX = MARGIN + i * (colW + colGap);
 
-    doc.y = textY + imgW * 1.4;
+    // Card panel
+    const cardH = 320;
+    doc.save();
+    doc.roundedRect(colX, colTop, colW, cardH, 6)
+      .lineWidth(1)
+      .fillAndStroke(COLORS.panel, COLORS.panelBorder);
+    doc.restore();
+
+    // Cover image (centered in column)
+    if (fs.existsSync(book.cover)) {
+      const imgX = colX + (colW - coverW) / 2;
+      try {
+        doc.image(book.cover, imgX, colTop + 18, { width: coverW });
+      } catch {}
+    }
+
+    const textTop = colTop + 18 + coverW * 1.4 + 14;
+    const padX = 16;
+    const innerW = colW - padX * 2;
+
+    doc.fillColor(COLORS.amber).font("Helvetica").fontSize(7)
+      .text(book.tag, colX + padX, textTop, {
+        width: innerW,
+        align: "center",
+        characterSpacing: 2,
+      });
+
+    doc.fillColor(COLORS.textPrimary).font("Times-Bold").fontSize(16)
+      .text(book.title, colX + padX, textTop + 12, {
+        width: innerW,
+        align: "center",
+      });
+
+    doc.fillColor(COLORS.amberSoft).font("Times-Italic").fontSize(9)
+      .text(book.subtitle, colX + padX, doc.y + 2, {
+        width: innerW,
+        align: "center",
+        lineGap: 1,
+      });
+
+    doc.fillColor(COLORS.textSecondary).font("Helvetica").fontSize(9)
+      .text(book.desc, colX + padX, doc.y + 8, {
+        width: innerW,
+        align: "center",
+        lineGap: 2,
+      });
+
+    // Per-card CTA button
+    const btnH = 30;
+    const btnY = colTop + cardH - btnH - 14;
+    const btnPad = 12;
+    doc.save();
+    doc.roundedRect(colX + btnPad, btnY, colW - btnPad * 2, btnH, 3)
+      .lineWidth(1)
+      .fillAndStroke(COLORS.amber, COLORS.amber);
+    doc.restore();
+
+    doc.fillColor(COLORS.bg).font("Helvetica-Bold").fontSize(9)
+      .text(book.cta, colX + btnPad, btnY + 11, {
+        width: colW - btnPad * 2,
+        align: "center",
+        characterSpacing: 1.2,
+        link: book.url,
+        underline: false,
+      });
   }
 
-  doc.moveDown(2);
-
-  // CTA button
-  const btnW = 320;
-  const btnH = 44;
-  const btnX = (PAGE_W - btnW) / 2;
-  const btnY = doc.y;
-
-  doc.save();
-  doc.roundedRect(btnX, btnY, btnW, btnH, 4)
-    .lineWidth(1.5)
-    .fillAndStroke(COLORS.amber, COLORS.amber);
-  doc.restore();
-
-  doc.fillColor(COLORS.bg).font("Helvetica-Bold").fontSize(11)
-    .text("BUY THE LAST FIREFIGHTER ON NOTIONPRESS \u2192", btnX, btnY + 16, {
-      width: btnW,
-      align: "center",
-      characterSpacing: 1.5,
-      link: "https://notionpress.com/in/read/the-last-firefighter",
-      underline: false,
-    });
-
-  doc.y = btnY + btnH + 10;
-  doc.fillColor(COLORS.textMuted).font("Helvetica").fontSize(9)
-    .text("notionpress.com/in/read/the-last-firefighter", MARGIN, doc.y, {
+  doc.y = colTop + 320 + 10;
+  doc.fillColor(COLORS.textMuted).font("Helvetica").fontSize(8)
+    .text("Both books available on NotionPress  \u2014  notionpress.com", MARGIN, doc.y, {
       width: CONTENT_W,
       align: "center",
-      link: "https://notionpress.com/in/read/the-last-firefighter",
+      characterSpacing: 1,
     });
 
   // Footer
