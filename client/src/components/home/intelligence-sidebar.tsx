@@ -7,6 +7,7 @@ import { BLOG_POSTS } from "@/lib/data";
 // Import images from attached assets
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import bookCoverUrl from "@assets/book-cover-order-of-chaos.png";
+import lastFirefighterCoverUrl from "@assets/image_1778398480861.png";
 import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
 import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
 import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";
@@ -146,6 +147,47 @@ export function IntelligenceSidebar() {
           <p className="text-xs text-slate-400 font-light leading-relaxed">
             This online Case File Codex is the living, breathing version of that library. It contains those same cornerstone cases, supplemented by an ever-growing collection of new, more tactical case files developed through my ongoing work.
           </p>
+
+          {/* The Last Firefighter */}
+          <div className="pt-6 mt-6 border-t border-slate-900 space-y-4">
+            <a
+              href="https://notionpress.com/in/read/the-last-firefighter"
+              target="_blank"
+              rel="noreferrer"
+              className="group cursor-pointer block"
+              data-testid="link-book-last-firefighter"
+            >
+              <div className="grid grid-cols-[1fr_120px] gap-4 items-start">
+                <div>
+                  <h4 className="font-serif text-lg text-slate-300 mb-1 group-hover:text-amber-500 transition-colors">The Last Firefighter</h4>
+                  <span className="text-[10px] font-mono text-slate-500 uppercase block mb-3">Predictive Quality Manual</span>
+                  <div className="flex items-center gap-2 text-xs font-mono text-amber-500 group-hover:text-amber-400 transition-colors">
+                    <span>ACQUIRE THE MANUAL</span>
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+
+                <div className="w-16 h-24 flex-shrink-0">
+                  <img
+                    src={lastFirefighterCoverUrl}
+                    alt="The Last Firefighter"
+                    className="w-full h-full rounded border border-amber-500/30 shadow-lg shadow-amber-900/20 group-hover:shadow-amber-900/40 group-hover:border-amber-500/60 transition-all object-cover object-left-top"
+                    data-testid="img-book-last-firefighter"
+                  />
+                </div>
+              </div>
+            </a>
+
+            <p className="text-xs text-slate-400 font-light leading-relaxed">
+              <span className="italic">The Last Firefighter</span>, provides the definitive, deep analysis of the core methodology and the 80+ cornerstone case files that show how AI and Six Sigma merge to predict and prevent defects&mdash;the foundational problems every quality professional must solve.
+            </p>
+            <p className="text-xs text-slate-400 font-light leading-relaxed">
+              This online Framework Hub is the living, breathing version of that library. It contains those same cornerstone cases, supplemented by an ever-growing collection of new, more tactical case files, downloadable tool templates, and 90-day implementation checklists developed through my ongoing work with telecom, banking, healthcare, and BPO organisations.
+            </p>
+            <p className="text-xs text-slate-400 font-light leading-relaxed">
+              Whether you're a Transformation expert, an operations leader, or a frontline analyst, you'll find practical, no-code blueprints to stop fighting fires and start building systems that watch while you sleep.
+            </p>
+          </div>
         </div>
       </div>
       
