@@ -20,7 +20,7 @@ export function VaultMenu({ isOpen, onClose }: VaultMenuProps) {
   };
 
   const links = [
-    { name: "AI Interface", path: "/", label: "AI Interface", external: false },
+    { name: "HK's Digital Twin", path: "/", label: "HK's Digital Twin", external: false },
     { name: "Architectural Scaling Framework", path: "/framework", label: "The Codex (Book)", external: false },
     { name: "Predictive Quality Framework", path: "/predictive-quality-framework", label: "D-M-A-I-C", external: false },
     { name: "HK's Journal", path: "/journal", label: "The Journal (Blog)", external: false },
