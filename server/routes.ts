@@ -135,6 +135,7 @@ export async function registerRoutes(
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${baseUrl}/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
   <url><loc>${baseUrl}/framework</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>${baseUrl}/predictive-quality-framework</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
   <url><loc>${baseUrl}/journal</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
   <url><loc>${baseUrl}/chat</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>`;
     

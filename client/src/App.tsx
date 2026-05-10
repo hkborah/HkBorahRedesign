@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 
 import Home from "@/pages/home";
 import Framework from "@/pages/framework";
+import PredictiveQualityFramework from "@/pages/predictive-quality-framework";
 import Journal from "@/pages/journal";
 import JournalPost from "@/pages/journal-post";
 import About from "@/pages/about";
@@ -21,6 +22,8 @@ function AppRoutes() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/framework" component={Framework} />
+      <Route path="/predictive-quality-framework" component={PredictiveQualityFramework} />
+      <Route path="/dmaic-ai" component={PredictiveQualityFramework} />
       <Route path="/journal" component={Journal} />
       <Route path="/journal/:id" component={JournalPost} />
       <Route path="/about" component={About} />
