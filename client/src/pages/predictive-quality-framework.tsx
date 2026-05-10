@@ -136,7 +136,7 @@ export default function PredictiveQualityFramework() {
 
         <div className="container mx-auto px-6 py-12 max-w-7xl space-y-24">
           {/* Hero */}
-          <div className="text-center max-w-3xl mx-auto space-y-6">
+          <div className="text-justify max-w-3xl mx-auto space-y-6">
             <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">
               The Predictive Quality Framework (D‑M‑A‑I‑C)
             </span>
