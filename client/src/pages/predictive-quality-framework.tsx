@@ -334,14 +334,21 @@ export default function PredictiveQualityFramework() {
                   <ExternalLink className="h-4 w-4" /> Buy the Book on Amazon
                 </Button>
               </a>
-              <Button
-                variant="ghost"
-                className="text-slate-300 hover:text-amber-500 gap-2"
-                data-testid="button-download-checklist"
-                disabled
+              <a
+                href="/last-firefighter-90-day-checklist.pdf"
+                target="_blank"
+                rel="noreferrer"
+                download
+                data-testid="link-download-checklist"
               >
-                <Download className="h-4 w-4" /> Download 90‑Day Checklist (coming soon)
-              </Button>
+                <Button
+                  variant="ghost"
+                  className="text-slate-300 hover:text-amber-500 gap-2"
+                  data-testid="button-download-checklist"
+                >
+                  <Download className="h-4 w-4" /> Download 90‑Day Checklist (PDF)
+                </Button>
+              </a>
             </div>
           </div>
         </div>

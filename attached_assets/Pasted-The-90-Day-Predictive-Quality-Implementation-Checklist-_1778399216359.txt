@@ -1,0 +1,133 @@
+The 90‑Day Predictive Quality Implementation Checklist
+How to use this checklist
+Print one copy for each 90‑day cycle.
+
+Check off each box as you complete the task.
+
+At the end of each week, review your progress.
+
+The goal is progress, not perfection. Miss a day? Pick up where you left off.
+
+Month 1: Discover & Prepare (Weeks 1–4)
+Week 1 – Pick Your Problem
+Goal: Choose one specific, measurable problem to attack.
+
+Day	Task	Done ☐
+1	Write down the problem in one sentence (e.g., “Billing errors in the north region call centre”)	☐
+2	Estimate the cost of this problem per week/month (money, time, customer goodwill)	☐
+3	Identify the one metric that would tell you if the problem is solved (e.g., “error rate < 2%”)	☐
+4	Check that you have at least 3‑6 months of historical data for this problem	☐
+5	Name the person who will own the pilot (can be you)	☐
+(Weekend)	Review and finalise your problem statement. Share it with one colleague for feedback.	☐
+Week 2 – Find Your Data
+Goal: Gather the data you already have into one place.
+
+Day	Task	Done ☐
+1	List all sources of data related to your problem (call logs, CRM, spreadsheets, emails)	☐
+2	Export each source into a common format (CSV or Excel)	☐
+3	Create a single folder on your computer or shared drive: “90‑Day Pilot – Data”	☐
+4	Copy all exports into that folder	☐
+5	Open one file. Make sure column names are consistent (e.g., “Date” not “Date of call”)	☐
+(Weekend)	Repeat column cleaning for all files. Don’t aim for perfection – just consistent enough.	☐
+Week 3 – Choose Your Tool
+Goal: Pick a free or open‑source AI tool and get comfortable with it.
+
+Day	Task	Done ☐
+1	Read Appendix A of The Last Firefighter – tool recommendations	☐
+2	Choose one tool: Orange (open source) or Hugging Face AI Sheets (for text)	☐
+3	Install the tool (or open the web app)	☐
+4	Run the tool’s tutorial or sample dataset (usually built in)	☐
+5	Load one of your own data files into the tool – just explore	☐
+(Weekend)	Watch a 15‑min YouTube tutorial for that tool	☐
+Week 4 – Prepare Your Team
+Goal: Get one key person on board (quietly – no big presentation).
+
+Day	Task	Done ☐
+1	Identify the one person whose support you need (manager, team lead, or a trusted peer)	☐
+2	Write a two‑sentence summary: “I’m trying a small pilot on [problem]. I’ll show you results in 4 weeks.”	☐
+3	Schedule a 15‑minute chat with that person	☐
+4	In the chat, say your two sentences. Ask: “Any concerns?”	☐
+5	If they say yes, thank them. If they say no, ask: “What would make you comfortable?”	☐
+(Weekend)	Adjust your plan based on their feedback. Do not expand scope.	☐
+Month 2: Model & Analyse (Weeks 5–8)
+Week 5 – Build Your First Model
+Goal: Let the AI find patterns in your data.
+
+Day	Task	Done ☐
+1	Combine your cleaned data files into one master spreadsheet (if not already)	☐
+2	Open your chosen AI tool and import the master file	☐
+3	Run a “pattern finder” or “correlation” function (in Orange: “Correlations” widget)	☐
+4	Write down the top 3 patterns the tool finds (e.g., “X and Y together predict error”)	☐
+5	Do any of these patterns make sense? Note any that surprise you.	☐
+(Weekend)	Don’t judge the patterns yet – just collect them.	☐
+Week 6 – Validate the Results
+Goal: Test if the patterns are real or random.
+
+Day	Task	Done ☐
+1	Take the most promising pattern. Write it as a hypothesis: “When [condition A] and [B], defect rate is [X%]”	☐
+2	Find a separate chunk of data (e.g., last month’s records) that the model has not seen	☐
+3	Manually check 10‑20 cases that match the pattern. How many actually had a defect?	☐
+4	Calculate the pattern’s accuracy = (correct predictions / total cases) × 100	☐
+5	If accuracy is > 60%, keep it. If less, go back to Week 5 and pick another pattern.	☐
+(Weekend)	Document the winning pattern in one paragraph.	☐
+Week 7 – Refine Once
+Goal: Improve the model by adding one more data source or cleaning one variable.
+
+Day	Task	Done ☐
+1	Identify one missing variable that might improve the model (e.g., time of day, agent ID)	☐
+2	Find that data in another system. Export and add it to your master file.	☐
+3	Re‑run the pattern finder with the new data.	☐
+4	Compare new accuracy vs old accuracy. Did it improve?	☐
+5	If yes, keep the new variable. If no, discard it.	☐
+(Weekend)	Finalise your model. You now have a working predictor.	☐
+Week 8 – Prepare Your Pilot
+Goal: Design a tiny, safe live test.
+
+Day	Task	Done ☐
+1	Decide: “When the model flags [condition], we will do [one specific action]”	☐
+2	Keep the action small (e.g., “send a 2‑minute email check”, “review the next 5 cases”)	☐
+3	Choose a timebox: 1 week, and only on one team / one shift / one product line	☐
+4	Define success: “We will see a [X%] reduction in [metric]”	☐
+5	Write a one‑page pilot plan (use Appendix D template)	☐
+(Weekend)	Share the plan with the one person from Week 4. Get a green light to run.	☐
+Month 3: Intervene, Calibrate & Scale (Weeks 9–12)
+Week 9 – Run the Pilot
+Goal: Execute your tiny live test.
+
+Day	Task	Done ☐
+1	Start the pilot on Monday morning.	☐
+2	Each day, apply the action to every flagged case.	☐
+3	Keep a simple log: date, flagged? action taken? outcome?	☐
+4	End of day: spend 5 minutes reviewing the log.	☐
+5	Do not change the process mid‑week. Stick to the plan.	☐
+(Weekend)	Compile the week’s log into a single table.	☐
+Week 10 – Measure the Results
+Goal: Calculate what changed.
+
+Day	Task	Done ☐
+1	Compare the defect rate during the pilot vs the previous month’s rate	☐
+2	If you prevented defects, calculate cost saved per defect × number prevented	☐
+3	Count how many alerts were false alarms. Calculate false alarm rate.	☐
+4	Was the cost of false alarms worth the savings from real catches?	☐
+5	Write a one‑page summary: what worked, what didn’t, what you learned.	☐
+(Weekend)	Prepare three bullet points of key results to share.	☐
+Week 11 – Share Your Findings
+Goal: Tell one person (the same from Week 4) what happened.
+
+Day	Task	Done ☐
+1	Schedule a 15‑minute meeting with the person.	☐
+2	In the meeting: “I ran a small pilot. Here’s what happened. [show 3 bullet points]”	☐
+3	Do not ask for budget or expansion yet – just share.	☐
+4	Ask: “What do you think?” Listen.	☐
+5	If they’re interested, offer to share the one‑page summary.	☐
+(Weekend)	Send the one‑page summary via email.	☐
+Week 12 – Plan Your Next 90 Days
+Goal: Decide what to do next – scale, kill, or pivot.
+
+Day	Task	Done ☐
+1	Review your pilot results. Was success clear? (Defects down? Money saved?)	☐
+2	If yes → plan to scale. If no → plan a new pilot on a different problem.	☐
+3	Write a one‑page “Next 90 Days” plan with one goal (e.g., scale to second team)	☐
+4	Share the plan with the same person. Ask: “Can we try this?”	☐
+5	Celebrate. You are no longer a firefighter – you are an architect.	☐
+(Weekend)	Rest. Then start again at Week 1 with a new problem.	☐
