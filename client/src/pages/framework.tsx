@@ -35,7 +35,7 @@ export default function Framework() {
                 <h1 className="text-5xl md:text-6xl font-serif font-bold text-slate-100">
                     From Chaos to <span className="text-amber-500">Scale</span>
                 </h1>
-                <p className="text-xl text-slate-400 leading-relaxed font-light text-justify">
+                <p className="text-xl text-slate-400 leading-relaxed font-light">
                     An enduring company is not stumbled upon; it is architected. 
                     Use the diagnostic matrix below to identify your zone of pain and access the corresponding Case File Codex.
                 </p>

@@ -144,10 +144,10 @@ export default function PredictiveQualityFramework() {
               Stop Fighting Fires.<br />
               <span className="text-amber-500">Start Architecting Calm.</span>
             </h1>
-            <p className="text-xl text-slate-400 leading-relaxed font-light text-justify">
+            <p className="text-xl text-slate-400 leading-relaxed font-light">
               Every quality professional knows the 2&nbsp;AM phone call. Another defect. Another crisis. Another exhausted team.
             </p>
-            <div className="space-y-4 text-base text-slate-400 leading-relaxed font-light text-justify">
+            <div className="space-y-4 text-base text-slate-400 leading-relaxed font-light">
               <p>
                 For decades, we've relied on DMAIC – Define, Measure, Analyse, Improve, Control. It works. But the world has changed. Processes are faster, data is messier, and defects often come from combinations no human can see.
               </p>
