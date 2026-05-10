@@ -1,0 +1,76 @@
+Page Title: The Predictive Quality Framework (D‑M‑A‑I‑C)
+URL suggestion: /predictive-quality-framework or /dmaic-ai
+
+Hero Section (Top of Page)
+Stop Fighting Fires. Start Architecting Calm.
+Every quality professional knows the 2 AM phone call. Another defect. Another crisis. Another exhausted team.
+For decades, we’ve relied on DMAIC – Define, Measure, Analyse, Improve, Control. It works. But the world has changed. Processes are faster, data is messier, and defects often come from combinations no human can see.
+That’s where AI comes in. But you don’t need to become a data scientist. You need a framework.
+Introducing the Predictive Quality Framework: D‑M‑A‑I‑C.
+The same five letters. A radically different meaning. Designed for the age of AI.
+
+The Framework Explained
+What is D‑M‑A‑I‑C?
+It’s a five‑stage model for moving your quality operations from reactive firefighting to predictive prevention. It mirrors the familiar rhythm of Six Sigma’s DMAIC, but each phase now integrates AI where it matters most – without losing human judgment.
+Phase
+Word
+What It Means
+D
+Discover
+Use AI to scan your data – call notes, transaction logs, agent comments – and find hidden patterns, correlations, and anomalies that no human could spot.
+M
+Model
+Build simple predictive models from those patterns. Forecast defects before they happen. Identify leading indicators.
+A
+Analyse
+Apply human judgment. Validate the model’s findings. Separate genuine signal from random noise. Ask “why” – the machine can’t.
+I
+Intervene
+Act on the predictions. Fix root causes. Redesign processes. Test changes on a digital twin before touching the real system.
+C
+Calibrate
+Keep the system sharp. Set dynamic control limits. Retrain models as the world changes. Adjust alert thresholds based on real costs.
+
+
+Why D‑M‑A‑I‑C Works
+Leverages existing Six Sigma muscle memory – Same five letters, same order. No retraining required.
+AI‑first, not AI‑only – The machine discovers and models. You analyse, intervene, and calibrate. Partnership, not replacement.
+Practical, not theoretical – No PhD needed. Use open‑source tools, free tiers, and your existing data.
+Apply D‑M‑A‑I‑C in 90 Days
+You don’t need a six‑month pilot or a million‑rupee budget. The D‑M‑A‑I‑C framework is designed to be operational from day one. Here’s how any organisation – call centre, bank, hospital, factory, BPO – can implement it in just 90 days.
+The 90‑Day Implementation Roadmap
+Timeframe
+Phase
+D‑M‑A‑I‑C Stage
+Weeks 1‑4
+Discover (D)
+Pick one problem. Export your data (even a spreadsheet). Use a free AI tool like Orange or Hugging Face AI Sheets to find hidden patterns. No coding. No data science team.
+Weeks 5‑8
+Model (M)
+Build a simple predictive model. Akkio, Obviously AI, or AutoGluon (all free tiers). The model will tell you which combinations of factors predict a defect.
+Week 9
+Analyse & Intervene (A + I)
+Validate the model with your team. Pick one small fix. Test it on a digital twin (even a spreadsheet simulation) or run a tiny live pilot on one team.
+Week 10‑11
+Intervene & Calibrate (I + C)
+Roll out the fix. Measure the results. Set alerts at the right threshold (not too many false alarms). Retrain the model with new data.
+Week 12
+Calibrate & Scale (C)
+Review what worked. Document the learning. Plan your next 90 days. You’re no longer a firefighter – you’re an architect.
+
+Why This Works (And Why It’s Obvious)
+Zero risk – Start with a silent pilot. Don’t change anything. Just run the AI in the background and compare its predictions to reality.
+Zero licence fees – Every tool recommended in The Last Firefighter is open source or has a free tier.
+Zero data science hires – If you can use Excel, you can use these tools.
+Zero disruption – Your team keeps doing their jobs. The AI just gives them better information.
+The Only Thing You Need
+A single problem. A single spreadsheet. And the willingness to try.
+
+Ready to Start Your 90 Days?
+The complete step‑by‑step plan – including a printable checklist, tool recommendations, and case files for every industry – is in Chapter 28 of The Last Firefighter.
+👉 Buy the Book on NotionPress
+👉 Buy the Book on Amazon
+Or start right now: download the free 90‑day plan checklist (no email required).
+Download PDF
+
+
