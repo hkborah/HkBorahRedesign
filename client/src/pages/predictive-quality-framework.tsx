@@ -136,7 +136,7 @@ export default function PredictiveQualityFramework() {
 
         <div className="container mx-auto px-6 py-12 max-w-7xl space-y-24">
           {/* Hero */}
-          <div className="text-justify max-w-3xl mx-auto space-y-6">
+          <div className="text-center max-w-3xl mx-auto space-y-6">
             <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">
               The Predictive Quality Framework (D‑M‑A‑I‑C)
             </span>
@@ -144,10 +144,10 @@ export default function PredictiveQualityFramework() {
               Stop Fighting Fires.<br />
               <span className="text-amber-500">Start Architecting Calm.</span>
             </h1>
-            <p className="text-xl text-slate-400 leading-relaxed font-light">
+            <p className="text-xl text-slate-400 leading-relaxed font-light text-justify">
               Every quality professional knows the 2&nbsp;AM phone call. Another defect. Another crisis. Another exhausted team.
             </p>
-            <div className="space-y-4 text-base text-slate-400 leading-relaxed font-light">
+            <div className="space-y-4 text-base text-slate-400 leading-relaxed font-light text-justify">
               <p>
                 For decades, we've relied on DMAIC – Define, Measure, Analyse, Improve, Control. It works. But the world has changed. Processes are faster, data is messier, and defects often come from combinations no human can see.
               </p>

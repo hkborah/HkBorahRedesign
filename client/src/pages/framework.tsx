@@ -30,12 +30,12 @@ export default function Framework() {
 
         <div className="container mx-auto px-6 py-12 max-w-7xl space-y-24">
             {/* Intro */}
-            <div className="text-justify max-w-3xl mx-auto space-y-6">
+            <div className="text-center max-w-3xl mx-auto space-y-6">
                 <span className="text-amber-500 font-mono text-sm uppercase tracking-widest block">The Architectural Scaling Framework</span>
                 <h1 className="text-5xl md:text-6xl font-serif font-bold text-slate-100">
                     From Chaos to <span className="text-amber-500">Scale</span>
                 </h1>
-                <p className="text-xl text-slate-400 leading-relaxed font-light">
+                <p className="text-xl text-slate-400 leading-relaxed font-light text-justify">
                     An enduring company is not stumbled upon; it is architected. 
                     Use the diagnostic matrix below to identify your zone of pain and access the corresponding Case File Codex.
                 </p>
