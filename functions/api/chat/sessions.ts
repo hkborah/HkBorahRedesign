@@ -22,11 +22,21 @@ export async function onRequest(context: any) {
 
       const result = await client.execute("SELECT * FROM chat_sessions ORDER BY created_at DESC");
 
-      const sessions = result.rows.map((row: any) => ({
-        id: row.id,
-        transcript: row.transcript,
-        createdAt: row.created_at || new Date().toISOString()
-      }));
+      const sessions = result.rows.map((row: any) => {
+        let createdAt = row.created_at;
+        // If it's a numeric timestamp (epoch seconds), convert to ISO string
+        if (createdAt && !isNaN(Number(createdAt)) && String(createdAt).length <= 10) {
+           createdAt = new Date(Number(createdAt) * 1000).toISOString();
+        } else if (!createdAt) {
+           createdAt = new Date().toISOString();
+        }
+
+        return {
+          id: row.id,
+          transcript: row.transcript,
+          createdAt: createdAt
+        };
+      });
 
       return new Response(JSON.stringify(sessions), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }

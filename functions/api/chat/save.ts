@@ -27,8 +27,12 @@ export async function onRequest(context: any) {
 
     const client = createClient({ url: env.DATABASE_URL, authToken: env.DATABASE_AUTH_TOKEN });
     const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
     
-    await client.execute({ sql: "INSERT INTO chat_sessions (id, transcript) VALUES (?, ?)", args: [id, transcript] });
+    await client.execute({ 
+      sql: "INSERT INTO chat_sessions (id, transcript, created_at) VALUES (?, ?, ?)", 
+      args: [id, transcript, createdAt] 
+    });
     
     return new Response(JSON.stringify({ success: true, sessionId: id, transcript, googleDrive: null }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
