@@ -15,10 +15,21 @@ export default function Login() {
   const [isLoading, setIsLoading] = React.useState(false);
   const { login } = useAuth();
   const [, navigate] = useLocation();
-  
-  // Only use the environment variable. Using the hardcoded demo key causes "invalid_client"
-  // errors because the origin/callback domains don't match for this preview URL.
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const [googleClientId, setGoogleClientId] = React.useState<string | null>(import.meta.env.VITE_GOOGLE_CLIENT_ID || null);
+
+  React.useEffect(() => {
+    // If not found in static env (e.g. built without secret), try fetching from server
+    if (!googleClientId) {
+      fetch("/api/config")
+        .then(res => res.json())
+        .then(data => {
+          if (data.googleClientId) {
+            setGoogleClientId(data.googleClientId);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [googleClientId]);
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     setIsLoading(true);

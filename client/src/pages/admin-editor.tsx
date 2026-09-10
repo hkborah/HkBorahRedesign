@@ -54,12 +54,6 @@ export default function AdminEditor() {
   const [deleteType, setDeleteType] = React.useState<"selected" | "all">("selected");
   const [deleting, setDeleting] = React.useState(false);
 
-  // Password change state
-  const [currentPassword, setCurrentPassword] = React.useState("");
-  const [newPassword, setNewPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [passwordChanging, setPasswordChanging] = React.useState(false);
-
   // Form state
   const [title, setTitle] = React.useState("");
   const [category, setCategory] = React.useState("");
@@ -347,68 +341,6 @@ export default function AdminEditor() {
   const openDeleteDialog = (type: "selected" | "all") => {
     setDeleteType(type);
     setDeleteDialogOpen(true);
-  };
-
-  // Handle password change
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Passwords Don't Match",
-        description: "New password and confirmation must match.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (newPassword.length < 6) {
-      toast({
-        title: "Password Too Short",
-        description: "New password must be at least 6 characters.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setPasswordChanging(true);
-    
-    try {
-      const response = await fetch("/api/auth/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeader() },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        toast({
-          title: "Password Changed",
-          description: "Your password has been updated successfully.",
-        });
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to change password.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to change password. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setPasswordChanging(false);
-    }
   };
 
   const validateImageDimensions = (file: File): Promise<boolean> => {
@@ -724,9 +656,6 @@ export default function AdminEditor() {
               </TabsTrigger>
               <TabsTrigger value="transcripts" className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 gap-2">
                 <MessageSquare className="h-4 w-4" /> Transcripts
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 gap-2">
-                <Settings className="h-4 w-4" /> Settings
               </TabsTrigger>
             </TabsList>
 
@@ -1243,69 +1172,6 @@ export default function AdminEditor() {
                     </div>
                   </div>
                 )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <div className="max-w-md mx-auto">
-                <div className="bg-slate-900/20 border border-slate-800 rounded-lg p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
-                      <Lock className="h-5 w-5 text-amber-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-serif font-bold text-slate-100">Change Password</h2>
-                      <p className="text-xs text-slate-500">Account: hkborah@thepico.in</p>
-                    </div>
-                  </div>
-                  
-                  <form onSubmit={handlePasswordChange} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-400 text-sm">Current Password</Label>
-                      <Input
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        placeholder="Enter current password"
-                        className="bg-slate-950 border-slate-800 text-slate-200"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="text-slate-400 text-sm">New Password</Label>
-                      <Input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new password (min 6 chars)"
-                        className="bg-slate-950 border-slate-800 text-slate-200"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="text-slate-400 text-sm">Confirm New Password</Label>
-                      <Input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                        className="bg-slate-950 border-slate-800 text-slate-200"
-                        required
-                      />
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 mt-6"
-                      disabled={passwordChanging || !currentPassword || !newPassword || !confirmPassword}
-                    >
-                      {passwordChanging ? "Changing..." : "Change Password"}
-                    </Button>
-                  </form>
-                </div>
               </div>
             </TabsContent>
           </Tabs>

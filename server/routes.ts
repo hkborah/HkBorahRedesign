@@ -127,6 +127,13 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Config endpoint for runtime env vars in production
+  app.get("/api/config", (req, res) => {
+    res.json({
+      googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || ""
+    });
+  });
+
   app.get("/sitemap.xml", async (req, res) => {
     const baseUrl = process.env.SITE_URL || `https://${req.get("host")}`;
     const posts = await storage.getAllBlogPosts();
