@@ -38,6 +38,9 @@ const authRateLimiter = rateLimit({
   message: { error: "Too many attempts, please try again later" },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => {
+    return (req.headers['x-forwarded-for'] as string) || (req.headers['forwarded'] as string) || req.ip || 'unknown';
+  }
 });
 
 const resetRateLimiter = rateLimit({
@@ -46,6 +49,9 @@ const resetRateLimiter = rateLimit({
   message: { error: "Too many password reset requests, please try again later" },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => {
+    return (req.headers['x-forwarded-for'] as string) || (req.headers['forwarded'] as string) || req.ip || 'unknown';
+  }
 });
 
 // Google Drive integration - Standard Google Cloud Auth
