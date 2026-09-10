@@ -30,6 +30,8 @@ app.use(cors({
     // Allow Replit preview domains for development
     /https:\/\/.*\.replit\.dev$/,
     // Allow local development
+    "http://localhost:3000",
+    "http://0.0.0.0:3000",
     "http://localhost:5000",
     "http://0.0.0.0:5000"
   ],
@@ -200,9 +202,9 @@ app.use((req, res, next) => {
     });
   }
 
-  // ALWAYS serve the app on port 5000
+  // ALWAYS serve the app on port 3000
   // this serves both the API and the client
-  const port = 5000;
+  const port = 3000;
   httpServer.listen({
     port,
     host: "0.0.0.0",

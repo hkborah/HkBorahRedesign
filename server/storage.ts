@@ -1,16 +1,7 @@
 import { type User, type InsertUser, type ChatSession, type BlogPost, type InsertBlogPost, type PasswordResetToken } from "@shared/schema";
-import { randomUUID } from "crypto";
-import { drizzle } from "drizzle-orm/node-postgres";
-import * as schema from "@shared/schema";
-import { eq, and, gt, sql, desc } from "drizzle-orm";
-import pkg from "pg";
-const { Pool } = pkg;
-
-// Initialize database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL!,
-});
-const db = drizzle(pool, { schema });
+import { db } from "./db";
+import { eq, inArray, desc } from "drizzle-orm";
+import { users, chatSessions, blogPosts, passwordResetTokens } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -35,199 +26,123 @@ export interface IStorage {
   markPasswordResetTokenUsed(token: string): Promise<boolean>;
 }
 
-export class DrizzleStorage implements IStorage {
+export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1);
-    return result[0];
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(schema.users).where(eq(schema.users.username, username)).limit(1);
-    return result[0];
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const result = await db.insert(schema.users).values({
-      id,
-      ...insertUser,
-    }).returning();
-    return result[0];
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
   }
 
   async updateUserPassword(username: string, newPasswordHash: string): Promise<boolean> {
-    const result = await db.update(schema.users)
+    const [updatedUser] = await db
+      .update(users)
       .set({ password: newPasswordHash })
-      .where(eq(schema.users.username, username))
+      .where(eq(users.username, username))
       .returning();
-    return result.length > 0;
+    return !!updatedUser;
   }
 
   async saveChatSession(transcript: string): Promise<ChatSession> {
-    const id = randomUUID();
-    const result = await db.insert(schema.chatSessions).values({
-      id,
-      transcript,
-    }).returning();
-    return result[0];
+    const [session] = await db.insert(chatSessions).values({ transcript }).returning();
+    return session;
   }
 
   async getAllChatSessions(): Promise<ChatSession[]> {
-    const sessions = await db.select().from(schema.chatSessions).orderBy(desc(schema.chatSessions.createdAt));
-    return sessions;
+    return await db.select().from(chatSessions).orderBy(desc(chatSessions.createdAt));
   }
 
   async getChatSession(id: string): Promise<ChatSession | undefined> {
-    const result = await db.select().from(schema.chatSessions).where(eq(schema.chatSessions.id, id)).limit(1);
-    return result[0];
+    const [session] = await db.select().from(chatSessions).where(eq(chatSessions.id, id));
+    return session;
   }
 
   async deleteChatSession(id: string): Promise<boolean> {
-    const result = await db.delete(schema.chatSessions)
-      .where(eq(schema.chatSessions.id, id))
-      .returning();
-    return result.length > 0;
+    const [deleted] = await db.delete(chatSessions).where(eq(chatSessions.id, id)).returning();
+    return !!deleted;
   }
 
   async deleteChatSessions(ids: string[]): Promise<number> {
     if (ids.length === 0) return 0;
-    let deleted = 0;
-    for (const id of ids) {
-      const result = await db.delete(schema.chatSessions)
-        .where(eq(schema.chatSessions.id, id))
-        .returning();
-      if (result.length > 0) deleted++;
-    }
-    return deleted;
+    const deleted = await db.delete(chatSessions).where(inArray(chatSessions.id, ids)).returning();
+    return deleted.length;
   }
 
   async deleteAllChatSessions(): Promise<number> {
-    const result = await db.delete(schema.chatSessions).returning();
-    return result.length;
+    const deleted = await db.delete(chatSessions).returning();
+    return deleted.length;
   }
 
   async getAllBlogPosts(): Promise<BlogPost[]> {
-    const posts = await db.select().from(schema.blogPosts).orderBy(desc(schema.blogPosts.createdAt));
-    return posts;
+    return await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
   }
 
   async getLatestBlogPosts(limit: number): Promise<BlogPost[]> {
-    const posts = await db.select().from(schema.blogPosts).orderBy(desc(schema.blogPosts.createdAt)).limit(limit);
-    return posts;
+    return await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt)).limit(limit);
   }
 
   async getBlogPost(id: string): Promise<BlogPost | undefined> {
-    const result = await db.select().from(schema.blogPosts).where(eq(schema.blogPosts.id, id)).limit(1);
-    return result[0];
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+    return post;
   }
 
   async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
-    const id = randomUUID();
     const randomLikes = Math.floor(Math.random() * 21) + 10;
-    const result = await db.insert(schema.blogPosts).values({
-      id,
-      ...insertPost,
-      likes: randomLikes,
-    }).returning();
-    return result[0];
+    const [post] = await db.insert(blogPosts).values({ ...insertPost, likes: randomLikes }).returning();
+    return post;
   }
 
   async updateBlogPost(id: string, insertPost: InsertBlogPost): Promise<BlogPost | undefined> {
-    const result = await db.update(schema.blogPosts)
+    const [updatedPost] = await db
+      .update(blogPosts)
       .set(insertPost)
-      .where(eq(schema.blogPosts.id, id))
+      .where(eq(blogPosts.id, id))
       .returning();
-    return result[0];
+    return updatedPost;
   }
 
   async deleteBlogPost(id: string): Promise<boolean> {
-    const result = await db.delete(schema.blogPosts)
-      .where(eq(schema.blogPosts.id, id));
-    return true;
+    const [deleted] = await db.delete(blogPosts).where(eq(blogPosts.id, id)).returning();
+    return !!deleted;
   }
 
   async incrementBlogPostLikes(id: string): Promise<number> {
-    const result = await db.update(schema.blogPosts)
-      .set({ likes: sql`COALESCE(${schema.blogPosts.likes}, 0) + 1` })
-      .where(eq(schema.blogPosts.id, id))
-      .returning({ likes: schema.blogPosts.likes });
-    return result[0]?.likes ?? 0;
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+    if (!post) return 0;
+    const newLikes = (post.likes ?? 0) + 1;
+    await db.update(blogPosts).set({ likes: newLikes }).where(eq(blogPosts.id, id));
+    return newLikes;
   }
 
   async createPasswordResetToken(username: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {
-    const id = randomUUID();
-    const result = await db.insert(schema.passwordResetTokens).values({
-      id,
-      username,
-      token,
-      expiresAt,
-    }).returning();
-    return result[0];
+    const [resetToken] = await db.insert(passwordResetTokens).values({ username, token, expiresAt }).returning();
+    return resetToken;
   }
 
   async getValidPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
-    const result = await db.select().from(schema.passwordResetTokens).where(
-      and(
-        eq(schema.passwordResetTokens.token, token),
-        eq(schema.passwordResetTokens.used, "false"),
-        gt(schema.passwordResetTokens.expiresAt, new Date())
-      )
-    ).limit(1);
-    return result[0];
+    const [resetToken] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+    if (resetToken && resetToken.used === "false" && resetToken.expiresAt && resetToken.expiresAt > new Date()) {
+        return resetToken;
+    }
+    return undefined;
   }
 
   async markPasswordResetTokenUsed(token: string): Promise<boolean> {
-    const result = await db.update(schema.passwordResetTokens)
+    const [updated] = await db
+      .update(passwordResetTokens)
       .set({ used: "true" })
-      .where(eq(schema.passwordResetTokens.token, token))
+      .where(eq(passwordResetTokens.token, token))
       .returning();
-    return result.length > 0;
+    return !!updated;
   }
 }
 
-export const storage = new DrizzleStorage();
-
-// Initialize with default blog posts
-const defaultBlogPosts = [
-  {
-    title: "Architecting an IPO-Ready Conglomerate",
-    excerpt: "As an investor and advisor, I detail how the Architectural Scaling Framework was deployed to transform a chaotic, multi-vertical company into a disciplined, IPO-ready enterprise.",
-    content: "A Longitudinal Case Study by H.K. Borah, Investor & Advisor\n\n# Case Study: Architecting a Vertically Integrated Growth Engine\n\nHow the Architectural Scaling Framework was deployed to transform a chaotic, multi-vertical company into a disciplined, IPO-ready enterprise.",
-    date: "Nov 15, 2024",
-    slug: "architecting-ipo-conglomerate",
-    image: "@assets/generated_images/blueprint_architecture_framework_design.png",
-    category: "FEATURED INTELLIGENCE"
-  },
-  {
-    title: "The Six Sigma Secret to Startup Scaling",
-    excerpt: "How a system from manufacturing can build you a flawless, repeatable growth engine by engineering chaos out of your operations.",
-    content: "A Cross-Disciplinary Thesis\n\n# The Six Sigma Secret to Startup Scaling\n\nHow a system from manufacturing can build you a flawless, repeatable growth engine by engineering chaos out of your operations.",
-    date: "Nov 8, 2024",
-    slug: "six-sigma-scaling",
-    image: "@assets/generated_images/six_sigma_manufacturing_process_flow.png",
-    category: "THOUGHTS"
-  },
-  {
-    title: "Your First Board Meeting Is Not a Report",
-    excerpt: "Why the traditional board meeting is an architectural flaw, and how to transform it into your most valuable strategic asset.",
-    content: "A Contrarian Manifesto\n\n# Your First Board Meeting Is Not a Report\n\nBy HK Borah\n\nPublished: 21 January, 2025\n\n## I. Introduction: The Unexamined Architectural Flaw in Startup Governance",
-    date: "Nov 1, 2024",
-    slug: "first-board-meeting",
-    image: "@assets/generated_images/strategic_board_meeting_collaboration.png",
-    category: "WAR STORIES"
-  }
-];
-
-// Seed default posts if they don't exist
-(async () => {
-  try {
-    const existingPosts = await storage.getAllBlogPosts();
-    if (existingPosts.length === 0) {
-      for (const post of defaultBlogPosts) {
-        await storage.createBlogPost(post);
-      }
-    }
-  } catch (error) {
-    console.error("Error seeding blog posts:", error);
-  }
-})();
+export const storage = new DatabaseStorage();

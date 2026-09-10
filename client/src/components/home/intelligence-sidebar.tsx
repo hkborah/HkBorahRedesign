@@ -3,11 +3,20 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { BLOG_POSTS } from "@/lib/data";
 // Import images from attached assets
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import bookCoverUrl from "@assets/book-cover-order-of-chaos.png";
 import lastFirefighterCoverUrl from "@assets/image_1778398480861.png";
+import vegaCoverUrl from "@assets/vega-book-cover.png";
 import blueprintImg from "@assets/generated_images/blueprint_architecture_framework_design.png";
 import sixSigmaImg from "@assets/generated_images/six_sigma_manufacturing_process_flow.png";
 import boardMeetingImg from "@assets/generated_images/strategic_board_meeting_collaboration.png";
@@ -30,8 +39,33 @@ function resolveImagePath(imagePath: string | undefined): string {
   return imagePath;
 }
 
+function BookDescription({ title, children }: { title: string, children: React.ReactNode }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="cursor-pointer group mt-3">
+          <div className="line-clamp-3 text-xs text-slate-400 font-light leading-relaxed group-hover:text-slate-300 transition-colors [&>p]:inline [&>p]:mr-1">
+            {children}
+          </div>
+          <span className="text-[10px] text-amber-500 font-mono mt-2 block opacity-80 group-hover:opacity-100 transition-opacity">READ MORE...</span>
+        </div>
+      </DialogTrigger>
+      <DialogContent className="max-w-md bg-slate-950 border-slate-800 text-slate-200">
+        <DialogHeader>
+          <DialogTitle className="font-serif text-xl text-amber-500">{title}</DialogTitle>
+          <DialogDescription className="sr-only">Description for {title}</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 text-sm text-slate-300 font-light leading-relaxed mt-2 [&>p]:block">
+          {children}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function IntelligenceSidebar() {
-  const [posts, setPosts] = React.useState<typeof BLOG_POSTS>([]);
+  const [posts, setPosts] = React.useState<any[]>([]);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const fetchPosts = async () => {
@@ -40,19 +74,67 @@ export function IntelligenceSidebar() {
         const response = await fetch("/api/blog/latest/4");
         if (response.ok) {
           const data = await response.json();
-          setPosts(data && data.length > 0 ? data : BLOG_POSTS.slice(0, 4));
+          setPosts(data || []);
         } else {
-          setPosts(BLOG_POSTS.slice(0, 4));
+          setPosts([]);
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
-        setPosts(BLOG_POSTS.slice(0, 4));
+        setPosts([]);
       }
     };
     fetchPosts();
   }, []);
 
-  const displayPosts = posts.length > 0 ? posts : BLOG_POSTS;
+  // Auto-scroll logic
+  React.useEffect(() => {
+    if (posts.length <= 2) return; // Only auto-scroll if there are enough posts to scroll
+    
+    const scrollContainer = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (!scrollContainer) return;
+
+    let scrollAmount = 0;
+    let scrollDirection = 1; // 1 for down, -1 for up
+    const scrollSpeed = 0.5; // pixels per frame
+
+    let animationFrameId: number;
+
+    const scroll = () => {
+      if (scrollContainer) {
+        scrollAmount += scrollSpeed * scrollDirection;
+        scrollContainer.scrollTop = scrollAmount;
+
+        // Reverse direction if we hit bottom or top
+        if (scrollAmount >= scrollContainer.scrollHeight - scrollContainer.clientHeight) {
+          scrollDirection = -1;
+        } else if (scrollAmount <= 0) {
+          scrollDirection = 1;
+        }
+      }
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    const startScroll = () => {
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    const stopScroll = () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+
+    startScroll();
+
+    scrollContainer.addEventListener('mouseenter', stopScroll);
+    scrollContainer.addEventListener('mouseleave', startScroll);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      scrollContainer.removeEventListener('mouseenter', stopScroll);
+      scrollContainer.removeEventListener('mouseleave', startScroll);
+    };
+  }, [posts]);
+
+  const displayPosts = posts;
 
   return (
     <div className="h-full flex flex-col justify-between p-8 sm:p-12 relative border-r border-slate-900/50">
@@ -80,31 +162,37 @@ export function IntelligenceSidebar() {
           <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">Latest Intelligence</span>
         </div>
 
-        <ScrollArea className="h-[300px] w-full pr-4">
+        <ScrollArea ref={scrollRef} className="h-[300px] w-full pr-4">
           <div className="space-y-6">
-            {displayPosts.map((post, index) => (
-              <motion.div 
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 + 0.5 }}
-                className="group cursor-pointer"
-              >
-                <Link href={`/journal/${post.id}`}>
-                  <div className="flex gap-4 items-start hover:bg-slate-900/40 p-2 rounded-lg transition-colors">
-                    <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0 bg-slate-800">
-                      <img src={resolveImagePath(post.image)} alt={post.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+            {displayPosts.length === 0 ? (
+              <div className="text-sm text-slate-500 italic py-4">
+                No recent intelligence entries. New journal posts will appear here.
+              </div>
+            ) : (
+              displayPosts.map((post, index) => (
+                <motion.div 
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 + 0.5 }}
+                  className="group cursor-pointer"
+                >
+                  <Link href={`/journal/${post.id}`}>
+                    <div className="flex gap-4 items-start hover:bg-slate-900/40 p-2 rounded-lg transition-colors">
+                      <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0 bg-slate-800">
+                        <img src={resolveImagePath(post.image)} alt={post.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-slate-200 group-hover:text-amber-500 transition-colors line-clamp-2 leading-snug">
+                          {post.title}
+                        </h4>
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-2 font-light leading-relaxed">{post.excerpt}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-slate-200 group-hover:text-amber-500 transition-colors line-clamp-2 leading-snug">
-                        {post.title}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2 font-light leading-relaxed">{post.excerpt}</p>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              ))
+            )}
           </div>
         </ScrollArea>
 
@@ -141,12 +229,14 @@ export function IntelligenceSidebar() {
           </a>
           
           {/* Explanation Text */}
-          <p className="text-xs text-slate-400 font-light leading-relaxed">
-            The Architectural Scaling Framework is an evolving system. My book, <span className="italic">The Order of Chaos</span>, provides the definitive, deep analysis of the cornerstone case files for each domain—the foundational problems every founder must solve.
-          </p>
-          <p className="text-xs text-slate-400 font-light leading-relaxed">
-            This online Case File Codex is the living, breathing version of that library. It contains those same cornerstone cases, supplemented by an ever-growing collection of new, more tactical case files developed through my ongoing work.
-          </p>
+          <BookDescription title="The Order of Chaos">
+            <p>
+              The Architectural Scaling Framework is an evolving system. My book, <span className="italic">The Order of Chaos</span>, provides the definitive, deep analysis of the cornerstone case files for each domain—the foundational problems every founder must solve.
+            </p>
+            <p>
+              This online Case File Codex is the living, breathing version of that library. It contains those same cornerstone cases, supplemented by an ever-growing collection of new, more tactical case files developed through my ongoing work.
+            </p>
+          </BookDescription>
 
           {/* The Last Firefighter */}
           <div className="pt-6 mt-6 border-t border-slate-900 space-y-4">
@@ -178,15 +268,60 @@ export function IntelligenceSidebar() {
               </div>
             </a>
 
-            <p className="text-xs text-slate-400 font-light leading-relaxed">
-              <span className="italic">The Last Firefighter</span>, provides the definitive, deep analysis of the core methodology and the 80+ cornerstone case files that show how AI and Six Sigma merge to predict and prevent defects&mdash;the foundational problems every quality professional must solve.
-            </p>
-            <p className="text-xs text-slate-400 font-light leading-relaxed">
-              This online Framework Hub is the living, breathing version of that library. It contains those same cornerstone cases, supplemented by an ever-growing collection of new, more tactical case files, downloadable tool templates, and 90-day implementation checklists developed through my ongoing work with telecom, banking, healthcare, and BPO organisations.
-            </p>
-            <p className="text-xs text-slate-400 font-light leading-relaxed">
-              Whether you're a Transformation expert, an operations leader, or a frontline analyst, you'll find practical, no-code blueprints to stop fighting fires and start building systems that watch while you sleep.
-            </p>
+            <BookDescription title="The Last Firefighter">
+              <p>
+                <span className="italic">The Last Firefighter</span>, provides the definitive, deep analysis of the core methodology and the 80+ cornerstone case files that show how AI and Six Sigma merge to predict and prevent defects&mdash;the foundational problems every quality professional must solve.
+              </p>
+              <p>
+                This online Framework Hub is the living, breathing version of that library. It contains those same cornerstone cases, supplemented by an ever-growing collection of new, more tactical case files, downloadable tool templates, and 90-day implementation checklists developed through my ongoing work with telecom, banking, healthcare, and BPO organisations.
+              </p>
+              <p>
+                Whether you're a Transformation expert, an operations leader, or a frontline analyst, you'll find practical, no-code blueprints to stop fighting fires and start building systems that watch while you sleep.
+              </p>
+            </BookDescription>
+          </div>
+
+          {/* VEGA */}
+          <div className="pt-6 mt-6 border-t border-slate-900 space-y-4">
+            <a
+              href="https://notionpress.com/in/read/vega-1410196172-1410196172"
+              target="_blank"
+              rel="noreferrer"
+              className="group cursor-pointer block"
+              data-testid="link-book-vega"
+            >
+              <div className="grid grid-cols-[1fr_120px] gap-4 items-start">
+                <div>
+                  <h4 className="font-serif text-lg text-slate-300 mb-1 group-hover:text-amber-500 transition-colors">VEGA</h4>
+                  <span className="text-[10px] font-mono text-slate-500 uppercase block mb-3">Governed AI Velocity</span>
+                  <div className="flex items-center gap-2 text-xs font-mono text-amber-500 group-hover:text-amber-400 transition-colors">
+                    <span>ACQUIRE THE MANUAL</span>
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+
+                <div className="w-16 h-24 flex-shrink-0">
+                  <img
+                    src={vegaCoverUrl}
+                    alt="VEGA - The Safe Sigma Method"
+                    className="w-full h-full rounded border border-amber-500/30 shadow-lg shadow-amber-900/20 group-hover:shadow-amber-900/40 group-hover:border-amber-500/60 transition-all object-cover object-left-top"
+                    data-testid="img-book-vega"
+                  />
+                </div>
+              </div>
+            </a>
+
+            <BookDescription title="VEGA">
+              <p>
+                More than 80% of AI projects fail. The technology is not the problem. The missing operating discipline is. <span className="italic">VEGA</span> delivers the framework that separates enterprise AI that scales from enterprise AI that crashes.
+              </p>
+              <p>
+                VEGA stands for Velocity, Enforcement, Governance, Assurance. It runs on three constructs, applied in a non-negotiable sequence: <strong>Shield</strong> (Governance and cybersecurity as one function), <strong>Rails</strong> (Deterministic process control, containerized workflows), and <strong>Speed</strong> (AI deployed at the point of highest operational friction).
+              </p>
+              <p>
+                The methodology is Safe Sigma, the proven DMAIC cycle applied to AI at project and programme level. Written for CEOs, CFOs, CROs, independent directors, CISOs, CTOs, and AI engineers tired of watching prototypes crash, VEGA gives you the questions to ask, the metrics to demand, and the architecture to build governed velocity. Speed is available to everyone. The Shield and the Rails are not.
+              </p>
+            </BookDescription>
           </div>
         </div>
       </div>

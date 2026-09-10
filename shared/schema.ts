@@ -1,22 +1,23 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  username: text("username").notNull().unique(), // We'll use this for email now
+  password: text("password"), // Optional for Google Sign-In
+  googleId: text("google_id"), // Store Google Sub ID
 });
 
-export const chatSessions = pgTable("chat_sessions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+export const chatSessions = sqliteTable("chat_sessions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   transcript: text("transcript").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
-export const blogPosts = pgTable("blog_posts", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+export const blogPosts = sqliteTable("blog_posts", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text("title").notNull(),
   category: text("category"),
   excerpt: text("excerpt").notNull(),
@@ -24,22 +25,23 @@ export const blogPosts = pgTable("blog_posts", {
   image: text("image"),
   slug: text("slug").notNull(),
   date: text("date").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   likes: integer("likes").default(0),
 });
 
-export const passwordResetTokens = pgTable("password_reset_tokens", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+export const passwordResetTokens = sqliteTable("password_reset_tokens", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   username: text("username").notNull(),
   token: text("token").notNull().unique(),
-  expiresAt: timestamp("expires_at").notNull(),
+  expiresAt: integer("expires_at", { mode: 'timestamp' }).notNull(),
   used: text("used").default("false"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  googleId: true,
 });
 
 export const insertChatSessionSchema = createInsertSchema(chatSessions).pick({

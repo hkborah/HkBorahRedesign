@@ -1,58 +1,54 @@
 import * as React from "react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, Lock, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link, useRoute, useLocation } from "wouter";
 import logoUrl from "@assets/HKB Transparent_1764559024056.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
   const [, params] = useRoute("/login/:type");
   const title = "Journal Login";
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const { login } = useAuth();
   const [, navigate] = useLocation();
-  const [showForgotPassword, setShowForgotPassword] = React.useState(false);
-  const [forgotEmail, setForgotEmail] = React.useState("");
-  const [isSendingReset, setIsSendingReset] = React.useState(false);
+  
+  // Only use the environment variable. Using the hardcoded demo key causes "invalid_client"
+  // errors because the origin/callback domains don't match for this preview URL.
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSuccess = async (credentialResponse: any) => {
     setIsLoading(true);
-    
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ credential: credentialResponse.credential }),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         login("editor", data.token);
         toast({
           title: "Access Granted",
-          description: `Welcome to the Journal Editor...`,
+          description: `Welcome back, ${data.user.username}...`,
         });
         navigate("/admin/journal");
       } else {
         toast({
           title: "Access Denied",
-          description: data.error || "Invalid email or password.",
+          description: data.error || "Authentication failed. Are you the superadmin?",
           variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: "Access Denied",
-        description: "Failed to connect. Please try again.",
+        description: "Failed to connect to authentication server.",
         variant: "destructive"
       });
     } finally {
@@ -60,41 +56,37 @@ export default function Login() {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSendingReset(true);
-    
-    try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotEmail }),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        toast({
-          title: "Reset Link Sent",
-          description: "If an account exists with this email, you will receive a password reset link shortly.",
-        });
-        setShowForgotPassword(false);
-      } else {
-        toast({
-          title: "Error",
-          description: data.error || "Failed to send reset link",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send reset link. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSendingReset(false);
+  // Helper to render the Google Login or an error warning if key is missing
+  const renderGoogleAuth = () => {
+    if (!googleClientId) {
+      return (
+        <div className="bg-amber-900/30 border border-amber-800/50 rounded p-4 text-xs text-amber-200/80 mb-6 text-center">
+          <p className="font-semibold text-amber-500 mb-1">Google OAuth Not Configured</p>
+          <p>Please add a <code>VITE_GOOGLE_CLIENT_ID</code> secret to enable "Sign in with Google" securely for your domain.</p>
+        </div>
+      );
     }
+
+    return (
+      <div className="flex justify-center">
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              toast({
+                title: "Google Auth Failed",
+                description: "Failed to initialize Google Sign In. Ensure third-party cookies are allowed.",
+                variant: "destructive",
+              });
+            }}
+            theme="filled_black"
+            shape="rectangular"
+            size="large"
+            text="signin_with"
+          />
+        </GoogleOAuthProvider>
+      </div>
+    );
   };
 
   return (
@@ -116,91 +108,7 @@ export default function Login() {
             </div>
 
             <div className="bg-slate-900/50 border border-slate-800 p-8 rounded-lg backdrop-blur-sm">
-                {!showForgotPassword ? (
-                  <>
-                    <form onSubmit={handleLogin} className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-slate-400">Identity</Label>
-                            <Input 
-                              id="email" 
-                              type="email" 
-                              placeholder="Enter email" 
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
-                              required 
-                              data-testid="input-email"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className="text-slate-400">Passcode</Label>
-                            <Input 
-                              id="password" 
-                              type="password" 
-                              placeholder="Enter passcode"
-                              value={password}
-                              onChange={(e) => setPassword(e.target.value)}
-                              className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
-                              required 
-                              data-testid="input-password"
-                            />
-                        </div>
-                        <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-medium" disabled={isLoading} data-testid="button-login">
-                            {isLoading ? (
-                                <span className="animate-pulse">Authenticating...</span>
-                            ) : (
-                                <span className="flex items-center gap-2"><Lock className="h-4 w-4" /> Access Vault</span>
-                            )}
-                        </Button>
-                    </form>
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setShowForgotPassword(true)}
-                        className="text-slate-500 hover:text-amber-500 text-sm transition-colors"
-                        data-testid="link-forgot-password"
-                      >
-                        Forgot your password?
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <form onSubmit={handleForgotPassword} className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="forgot-email" className="text-slate-400">Email Address</Label>
-                            <Input 
-                              id="forgot-email" 
-                              type="email" 
-                              placeholder="your@email.com" 
-                              value={forgotEmail}
-                              onChange={(e) => setForgotEmail(e.target.value)}
-                              className="bg-slate-950 border-slate-800 text-slate-200 focus-visible:ring-amber-500/50" 
-                              required 
-                              data-testid="input-forgot-email"
-                            />
-                        </div>
-                        <p className="text-slate-500 text-xs">
-                          A password reset link will be sent to this email address.
-                        </p>
-                        <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-medium" disabled={isSendingReset} data-testid="button-send-reset">
-                            {isSendingReset ? (
-                                <span className="animate-pulse">Sending...</span>
-                            ) : (
-                                <span className="flex items-center gap-2"><Mail className="h-4 w-4" /> Send Reset Link</span>
-                            )}
-                        </Button>
-                    </form>
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setShowForgotPassword(false)}
-                        className="text-slate-500 hover:text-amber-500 text-sm transition-colors"
-                        data-testid="link-back-to-login"
-                      >
-                        Back to Login
-                      </button>
-                    </div>
-                  </>
-                )}
+                {renderGoogleAuth()}
             </div>
         </div>
         

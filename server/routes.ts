@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { google } from "googleapis";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 
@@ -59,7 +59,7 @@ async function getGoogleDriveClient() {
     });
 
     const authClient = await auth.getClient();
-    return google.drive({ version: 'v3', auth: authClient });
+    return google.drive({ version: 'v3', auth: authClient as any });
   } catch (error) {
     console.error("Google Auth Error:", error);
     return null;
@@ -367,14 +367,69 @@ export async function registerRoutes(
   // --- Authentication Routes ---
   app.post("/api/auth/login", authRateLimiter, async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, credential } = req.body;
       
+      // Google Login Flow
+      if (credential) {
+        try {
+          const { OAuth2Client } = await import('google-auth-library');
+          // Check for VITE_GOOGLE_CLIENT_ID since that is what the user saved in secrets
+          const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+          
+          if (!GOOGLE_CLIENT_ID) {
+            console.error("Missing Google Client ID in backend");
+            return res.status(500).json({ error: "Server configuration error" });
+          }
+          
+          const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+          
+          const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: GOOGLE_CLIENT_ID,
+          });
+          
+          const payload = ticket.getPayload();
+          if (!payload || !payload.email) {
+            return res.status(401).json({ error: "Invalid Google token" });
+          }
+          
+          const loginEmail = payload.email.toLowerCase();
+          
+          // STRICT ENFORCEMENT: Only superadmin can log in
+          if (loginEmail !== "hkborah@gmail.com") {
+            return res.status(403).json({ error: "Access denied. Only the super admin (hkborah@gmail.com) can log in." });
+          }
+          
+          let user = await storage.getUserByUsername(loginEmail);
+          
+          // Auto-create superadmin on first login
+          if (!user) {
+            user = await storage.createUser({
+              username: loginEmail,
+              googleId: payload.sub
+            });
+          }
+          
+          const token = jwt.sign(
+            { username: user.username, id: user.id },
+            JWT_SECRET,
+            { expiresIn: "7d" } // 7 days for Google Login
+          );
+          
+          return res.json({ success: true, token, user: { username: user.username } });
+        } catch (e) {
+          console.error("Google Auth Error:", e);
+          return res.status(401).json({ error: "Google authentication failed" });
+        }
+      }
+
+      // Legacy Email/Password flow (Kept as fallback just in case)
       if (!email || !password) {
-        return res.status(400).json({ error: "Email and password are required" });
+        return res.status(400).json({ error: "Email and password or Google credential required" });
       }
       
       const user = await storage.getUserByUsername(email);
-      if (!user) {
+      if (!user || !user.password) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
       
@@ -510,10 +565,10 @@ export async function registerRoutes(
       }
       
       // Check if password is hashed (starts with $2) or plaintext
-      const isHashed = user.password.startsWith('$2');
+      const isHashed = user.password ? user.password.startsWith('$2') : false;
       let passwordValid = false;
       
-      if (isHashed) {
+      if (isHashed && user.password) {
         passwordValid = await bcrypt.compare(currentPassword, user.password);
       } else {
         passwordValid = currentPassword === user.password;
