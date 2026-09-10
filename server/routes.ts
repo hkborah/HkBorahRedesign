@@ -136,7 +136,7 @@ export async function registerRoutes(
   // Config endpoint for runtime env vars in production
   app.get("/api/config", (req, res) => {
     res.json({
-      googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || ""
+      googleClientId: (process.env.VITE_GOOGLE_CLIENT_ID || "").trim()
     });
   });
 
@@ -387,7 +387,7 @@ export async function registerRoutes(
         try {
           const { OAuth2Client } = await import('google-auth-library');
           // Check for VITE_GOOGLE_CLIENT_ID since that is what the user saved in secrets
-          const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+          const GOOGLE_CLIENT_ID = (process.env.VITE_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || "").trim();
           
           if (!GOOGLE_CLIENT_ID) {
             console.error("Missing Google Client ID in backend");

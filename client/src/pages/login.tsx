@@ -15,7 +15,9 @@ export default function Login() {
   const [isLoading, setIsLoading] = React.useState(false);
   const { login } = useAuth();
   const [, navigate] = useLocation();
-  const [googleClientId, setGoogleClientId] = React.useState<string | null>(import.meta.env.VITE_GOOGLE_CLIENT_ID || null);
+  const [googleClientId, setGoogleClientId] = React.useState<string | null>(
+    (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim() || null
+  );
 
   React.useEffect(() => {
     // If not found in static env (e.g. built without secret), try fetching from server
@@ -24,7 +26,7 @@ export default function Login() {
         .then(res => res.json())
         .then(data => {
           if (data.googleClientId) {
-            setGoogleClientId(data.googleClientId);
+            setGoogleClientId(data.googleClientId.trim());
           }
         })
         .catch(console.error);
@@ -40,9 +42,19 @@ export default function Login() {
         body: JSON.stringify({ credential: credentialResponse.credential }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error(`Server returned non-JSON. Status: ${response.status}. Text: ${text.substring(0, 60)}`);
+        }
+      } catch (e: any) {
+        throw new Error(e.message || "Failed to read response");
+      }
 
-      if (response.ok && data.success) {
+      if (response.ok && data && data.success) {
         login("editor", data.token);
         toast({
           title: "Access Granted",
@@ -56,10 +68,11 @@ export default function Login() {
           variant: "destructive"
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Login Error:", error);
       toast({
         title: "Access Denied",
-        description: "Failed to connect to authentication server.",
+        description: `Error: ${error?.message || "Failed to connect to authentication server"}`,
         variant: "destructive"
       });
     } finally {
