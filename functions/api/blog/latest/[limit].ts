@@ -14,7 +14,10 @@ export async function onRequest(context: any) {
   }
 
   if (request.method !== "GET") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed. Use GET." }), { 
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 
   const limit = parseInt(params.limit) || 4;
@@ -25,16 +28,13 @@ export async function onRequest(context: any) {
       authToken: env.DATABASE_AUTH_TOKEN,
     });
     
-    const result = await client.execute({
-      sql: "SELECT * FROM blog_posts ORDER BY date DESC LIMIT ?",
-      args: [limit]
-    });
+    const result = await client.execute({ sql: "SELECT * FROM blog_posts ORDER BY date DESC LIMIT ?", args: [limit] });
     
     return new Response(JSON.stringify(result.rows), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: "Failed to fetch latest blog posts", details: error.message }), {
+    return new Response(JSON.stringify({ error: "Failed to fetch", details: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });

@@ -74,10 +74,13 @@ export default function AdminEditor() {
   React.useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch("/api/blog/posts");
+        const response = await fetch("/api/blog/posts", { method: "GET" });
         if (response.ok) {
-          const data = await response.json();
-          setPosts(data && data.length > 0 ? data : []);
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            setPosts(data && data.length > 0 ? data : []);
+          }
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -555,9 +558,13 @@ export default function AdminEditor() {
           headers: { "Content-Type": "application/json", ...getAuthHeader() },
           body: JSON.stringify(newPost),
         });
+
         if (response.ok) {
-          const updated = await response.json();
-          setPosts(posts.map(p => p.id === editingPostId ? updated : p));
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const updated = await response.json();
+            setPosts(posts.map(p => p.id === editingPostId ? updated : p));
+          }
           toast({
             title: "✓ Report Updated",
             description: `"${title}" has been updated in your Archives.`,
@@ -567,14 +574,18 @@ export default function AdminEditor() {
           throw new Error("Failed to update post");
         }
       } else {
-        const response = await fetch("/api/blog/posts", {
+        const response = await fetch("/api/blog/create", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...getAuthHeader() },
           body: JSON.stringify(newPost),
         });
+
         if (response.ok) {
-          const created = await response.json();
-          setPosts([created, ...posts]);
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const created = await response.json();
+            setPosts([created, ...posts]);
+          }
           toast({
             title: "✓ Report Published",
             description: `"${title}" is now visible in your Archives and on the Journal.`,

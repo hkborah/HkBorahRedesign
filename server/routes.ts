@@ -301,7 +301,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/blog/posts", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/blog/create", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { title, category, excerpt, content, image, slug, date } = req.body;
       const post = await storage.createBlogPost({

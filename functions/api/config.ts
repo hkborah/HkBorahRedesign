@@ -12,7 +12,10 @@ export async function onRequest(context: any) {
   }
 
   if (request.method !== "GET") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed. Use GET." }), { 
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 
   return new Response(JSON.stringify({

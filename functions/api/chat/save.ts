@@ -14,46 +14,23 @@ export async function onRequest(context: any) {
   }
 
   if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed. Use POST." }), { 
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
   
   try {
     const data = await request.json();
     const messages = data.messages;
+    const transcript = messages.map((msg: any) => `[${msg.role === "user" ? "FOUNDER" : "HK BORAH"}]:\n${msg.content}`).join("\n\n-------------------\n\n");
 
-    if (!messages || !Array.isArray(messages)) {
-      return new Response(JSON.stringify({ error: "Invalid messages" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    const transcript = messages
-      .map((msg: any) => {
-        const role = msg.role === "user" ? "FOUNDER" : "HK BORAH";
-        return `[${role}]:\n${msg.content}`;
-      })
-      .join("\n\n-------------------\n\n");
-
-    const client = createClient({
-      url: env.DATABASE_URL,
-      authToken: env.DATABASE_AUTH_TOKEN,
-    });
-    
-    // We generate a UUID manually since SQLite crypto.randomUUID() might not be available
+    const client = createClient({ url: env.DATABASE_URL, authToken: env.DATABASE_AUTH_TOKEN });
     const id = crypto.randomUUID();
     
-    await client.execute({
-      sql: "INSERT INTO chat_sessions (id, transcript) VALUES (?, ?)",
-      args: [id, transcript]
-    });
+    await client.execute({ sql: "INSERT INTO chat_sessions (id, transcript) VALUES (?, ?)", args: [id, transcript] });
     
-    return new Response(JSON.stringify({
-      success: true,
-      sessionId: id,
-      transcript,
-      googleDrive: null 
-    }), {
+    return new Response(JSON.stringify({ success: true, sessionId: id, transcript, googleDrive: null }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (error: any) {
