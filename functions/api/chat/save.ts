@@ -1,5 +1,15 @@
 import { createClient } from "@libsql/client/web";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function onRequestOptions() {
+  return new Response(null, { headers: corsHeaders });
+}
+
 export async function onRequestPost(context: any) {
   const { env, request } = context;
   
@@ -10,7 +20,7 @@ export async function onRequestPost(context: any) {
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "Invalid messages" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
@@ -26,7 +36,6 @@ export async function onRequestPost(context: any) {
       authToken: env.DATABASE_AUTH_TOKEN,
     });
     
-    // Save to Turso via raw SQL
     // We generate a UUID manually since SQLite crypto.randomUUID() might not be available
     const id = crypto.randomUUID();
     
@@ -39,14 +48,14 @@ export async function onRequestPost(context: any) {
       success: true,
       sessionId: id,
       transcript,
-      googleDrive: null // Google Drive save only happens via the AI Studio Admin Panel
+      googleDrive: null 
     }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: "Failed to save chat" }), {
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 }

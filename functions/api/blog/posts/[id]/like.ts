@@ -1,5 +1,15 @@
 import { createClient } from "@libsql/client/web";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function onRequestOptions() {
+  return new Response(null, { headers: corsHeaders });
+}
+
 export async function onRequestPost(context: any) {
   const { env, params } = context;
   const id = params.id;
@@ -10,7 +20,6 @@ export async function onRequestPost(context: any) {
       authToken: env.DATABASE_AUTH_TOKEN,
     });
     
-    // Check if post exists
     const post = await client.execute({
       sql: "SELECT id FROM blog_posts WHERE id = ?",
       args: [id]
@@ -19,7 +28,7 @@ export async function onRequestPost(context: any) {
     if (post.rows.length === 0) {
       return new Response(JSON.stringify({ error: "Post not found" }), {
         status: 404,
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
     
@@ -34,12 +43,12 @@ export async function onRequestPost(context: any) {
     });
     
     return new Response(JSON.stringify({ success: true, likes: updated.rows[0].likes }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: "Failed to like post" }), {
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 }
