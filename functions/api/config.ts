@@ -4,12 +4,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-export async function onRequestOptions() {
-  return new Response(null, { headers: corsHeaders });
-}
+export async function onRequest(context: any) {
+  const { request, env } = context;
 
-export async function onRequestGet(context: any) {
-  const { env } = context;
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (request.method !== "GET") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+
   return new Response(JSON.stringify({
     googleClientId: env.VITE_GOOGLE_CLIENT_ID || "",
     isProduction: true,

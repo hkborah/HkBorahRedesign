@@ -6,12 +6,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-export async function onRequestOptions() {
-  return new Response(null, { headers: corsHeaders });
-}
+export async function onRequest(context: any) {
+  const { request, env } = context;
 
-export async function onRequestPost(context: any) {
-  const { env, request } = context;
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
   
   try {
     const data = await request.json();
@@ -52,8 +56,8 @@ export async function onRequestPost(context: any) {
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to save chat" }), {
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: "Failed to save chat", details: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });

@@ -6,12 +6,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-export async function onRequestOptions() {
-  return new Response(null, { headers: corsHeaders });
-}
+export async function onRequest(context: any) {
+  const { request, env, params } = context;
+  
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
 
-export async function onRequestGet(context: any) {
-  const { env, params } = context;
+  if (request.method !== "GET") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+
   const id = params.id;
   
   try {
@@ -42,8 +47,8 @@ export async function onRequestGet(context: any) {
     return new Response(JSON.stringify(result.rows[0]), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to fetch blog post" }), {
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: "Failed to fetch blog post", details: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
